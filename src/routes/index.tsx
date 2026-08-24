@@ -1,24 +1,41 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, ClientOnly } from "@tanstack/react-router";
+import { lazy, Suspense } from "react";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
+const ChessApp = lazy(() => import("@/components/chess/ChessApp"));
+
+const title = "Pastel Chess — Play Chess With a Friend, No Signup";
+const description =
+  "Free peer-to-peer chess for phones. Create a game code, share the link, and play a friend instantly — no accounts, no servers.";
+
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title },
+      { name: "description", content: description },
+      { property: "og:title", content: title },
+      { property: "og:description", content: description },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
+function BoardSkeleton() {
+  return (
+    <div className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col gap-4 px-4 pt-6">
+      <div className="h-10 w-40 animate-pulse rounded-2xl bg-muted" />
+      <div className="aspect-square w-full animate-pulse rounded-[28px] bg-muted" />
+    </div>
+  );
+}
+
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <ClientOnly fallback={<BoardSkeleton />}>
+      <Suspense fallback={<BoardSkeleton />}>
+        <ChessApp />
+      </Suspense>
+    </ClientOnly>
   );
 }
