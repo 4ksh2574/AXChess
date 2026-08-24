@@ -8,8 +8,8 @@ export function generateCode(): string {
       ? crypto.getRandomValues(new Uint8Array(6))
       : null;
   for (let i = 0; i < 6; i++) {
-    const n = bytes ? bytes[i] : Math.floor(Math.random() * 256);
-    out += CODE_ALPHABET[n % CODE_ALPHABET.length];
+    const n = (bytes ? bytes[i] : Math.floor(Math.random() * 256)) ?? 0;
+    out += CODE_ALPHABET[n % CODE_ALPHABET.length] ?? "a";
   }
   return out;
 }
@@ -34,7 +34,7 @@ export function inviteLink(code: string): string {
 export function codeFromHash(): string | null {
   if (typeof window === "undefined") return null;
   const m = window.location.hash.match(/game=([a-z0-9-]+)/i);
-  return m ? normalizeCode(m[1]) : null;
+  return m?.[1] ? normalizeCode(m[1]) : null;
 }
 
 export const ICE_SERVERS: RTCIceServer[] = [
@@ -58,7 +58,7 @@ export type PeerMessage =
       t: "move";
       from: string;
       to: string;
-      promotion?: string;
+      promotion?: string | undefined;
       fen: string;
       moveCount: number;
     }

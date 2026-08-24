@@ -58,7 +58,11 @@ export default function ChessApp() {
       }
       if (msg.t === "move") {
         try {
-          const move = game.move({ from: msg.from, to: msg.to, promotion: msg.promotion });
+          const move = game.move(
+            msg.promotion
+              ? { from: msg.from, to: msg.to, promotion: msg.promotion }
+              : { from: msg.from, to: msg.to },
+          );
           if (move) {
             setLastMove({ from: move.from, to: move.to });
             if (move.captured) sounds.capture();
@@ -223,7 +227,7 @@ export default function ChessApp() {
       const current = gameRef.current;
       let move;
       try {
-        move = current.move({ from, to, promotion });
+        move = current.move(promotion ? { from, to, promotion } : { from, to });
       } catch {
         return false;
       }
@@ -239,7 +243,7 @@ export default function ChessApp() {
         t: "move",
         from,
         to,
-        promotion,
+        ...(promotion ? { promotion } : {}),
         fen: current.fen(),
         moveCount: current.history().length,
       });
