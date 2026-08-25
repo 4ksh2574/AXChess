@@ -121,12 +121,18 @@ const Queen = ({ tone }: { tone: Tone }) => (
 const King = ({ tone }: { tone: Tone }) => (
   <>
     <path
-      d="M22.5 4 v7 M19 7 h7"
+      d="M22.5 2.8 v8.4 M18.3 6.4 h8.4"
       fill="none"
       stroke={tone.edge}
       strokeWidth={2.4}
     />
-    <path d="M22.5 12 c4.6-4 11.6-2 11.6 4 c0 4-3.4 6.6-11.6 13 c-8.2-6.4-11.6-9-11.6-13 c0-6 7-8 11.6-4 Z" />
+    <path d="M11.4 29 v-7.4 c0-6.4 4.7-10.4 11.1-10.4 s11.1 4 11.1 10.4 V29 Z" />
+    <path
+      d="M15.6 20.4 c2.4 2 4.6 3 6.9 3 s4.5-1 6.9-3"
+      fill="none"
+      stroke={tone.edge}
+      strokeWidth={1.3}
+    />
     <rect x={11.5} y={28.6} width={22} height={4.4} rx={2.2} />
     <Base tone={tone} />
   </>
