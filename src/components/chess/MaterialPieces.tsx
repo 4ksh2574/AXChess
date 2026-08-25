@@ -28,7 +28,7 @@ function Piece({
 }: {
   children: ReactNode;
   tone: Tone;
-  svgStyle?: CSSProperties;
+  svgStyle?: CSSProperties | undefined;
 }) {
   return (
     <svg
