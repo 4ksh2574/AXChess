@@ -3,7 +3,7 @@ import { lazy, Suspense } from "react";
 
 const ChessApp = lazy(() => import("@/components/chess/ChessApp"));
 
-const title = "Pastel Chess — Play Chess With a Friend, No Signup";
+const title = "AXChess — Play Chess With a Friend, No Signup";
 const description =
   "Free peer-to-peer chess for phones. Create a game code, share the link, and play a friend instantly — no accounts, no servers.";
 

@@ -11,6 +11,7 @@ import {
   Wifi,
   WifiOff,
   RefreshCw,
+  Undo2,
 } from "lucide-react";
 import { usePeerGame } from "@/hooks/usePeerGame";
 import {
@@ -26,6 +27,8 @@ import {
 import { sounds, unlockAudio, setMuted } from "@/lib/sounds";
 import { boardTheme, materialPieces } from "./MaterialPieces";
 import { PlayerCard } from "./PlayerCard";
+import logoLight from "@/assets/logo-light.png";
+import logoDark from "@/assets/logo-dark.png";
 
 type Screen = "home" | "create" | "join" | "game";
 
@@ -44,10 +47,20 @@ export default function ChessApp() {
   const [muted, setMutedState] = useState(false);
   const [resigned, setResigned] = useState<"white" | "black" | null>(null);
   const [resultDismissed, setResultDismissed] = useState(false);
+  const [undoState, setUndoState] = useState<"idle" | "sent" | "incoming">("idle");
+  const [notice, setNotice] = useState<string | null>(null);
+  const noticeTimer = useRef<number | null>(null);
+  const resultRef = useRef<string | null>(null);
   const myColorRef = useRef(myColor);
   myColorRef.current = myColor;
 
   const refresh = useCallback(() => setFen(gameRef.current.fen()), []);
+
+  const showNotice = useCallback((text: string) => {
+    setNotice(text);
+    if (noticeTimer.current) window.clearTimeout(noticeTimer.current);
+    noticeTimer.current = window.setTimeout(() => setNotice(null), 2600);
+  }, []);
 
   const handleMessage = useCallback(
     (msg: PeerMessage) => {
@@ -57,6 +70,7 @@ export default function ChessApp() {
         return;
       }
       if (msg.t === "move") {
+        setUndoState("idle");
         try {
           const move = game.move(
             msg.promotion
@@ -88,7 +102,33 @@ export default function ChessApp() {
       if (msg.t === "resign") {
         setResigned(msg.color);
         setResultDismissed(false);
+        setUndoState("idle");
         sounds.end();
+        return;
+      }
+      if (msg.t === "undo-request") {
+        if (resultRef.current) {
+          peerSendRef.current?.({ t: "undo-decline" });
+          return;
+        }
+        setUndoState("incoming");
+        sounds.check();
+        return;
+      }
+      if (msg.t === "undo-accept") {
+        game.load(msg.fen);
+        setLastMove(null);
+        setSelected(null);
+        setUndoState("idle");
+        setResultDismissed(false);
+        sounds.move();
+        refresh();
+        showNotice("Undo accepted");
+        return;
+      }
+      if (msg.t === "undo-decline") {
+        setUndoState("idle");
+        showNotice("Undo request declined");
         return;
       }
       if (msg.t === "rematch") {
@@ -97,10 +137,11 @@ export default function ChessApp() {
         setSelected(null);
         setResigned(null);
         setResultDismissed(false);
+        setUndoState("idle");
         refresh();
       }
     },
-    [refresh],
+    [refresh, showNotice],
   );
 
   const peer = usePeerGame({
@@ -335,6 +376,7 @@ export default function ChessApp() {
     setLastMove(null);
     setSelected(null);
     setResigned(null);
+    setUndoState("idle");
     if (typeof window !== "undefined" && window.location.hash) {
       window.history.replaceState(null, "", window.location.pathname);
     }
@@ -343,8 +385,38 @@ export default function ChessApp() {
   const resign = () => {
     setResigned(myColor);
     setResultDismissed(false);
+    setUndoState("idle");
     peer.send({ t: "resign", color: myColor });
     sounds.end();
+  };
+
+  const requestUndo = () => {
+    unlockAudio();
+    if (gameRef.current.history().length === 0) return;
+    peer.send({ t: "undo-request" });
+    setUndoState("sent");
+    showNotice("Undo request sent to your opponent");
+  };
+
+  const acceptUndo = () => {
+    const current = gameRef.current;
+    const requester = myColorRef.current === "white" ? "b" : "w";
+    // Roll back until it is the requester's turn again (1 ply if they just
+    // moved, 2 plies if we already replied).
+    do {
+      if (!current.undo()) break;
+    } while (current.history().length > 0 && current.turn() !== requester);
+    setLastMove(null);
+    setSelected(null);
+    setUndoState("idle");
+    refresh();
+    peer.send({ t: "undo-accept", fen: current.fen() });
+    sounds.move();
+  };
+
+  const declineUndo = () => {
+    peer.send({ t: "undo-decline" });
+    setUndoState("idle");
   };
 
   const rematch = () => {
@@ -378,6 +450,7 @@ export default function ChessApp() {
     return null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fen, resigned, myColor]);
+  resultRef.current = result;
 
   const statusBadge = {
     idle: { label: "Offline", tone: "bg-muted text-muted-foreground", icon: WifiOff },
@@ -395,13 +468,18 @@ export default function ChessApp() {
   return (
     <main className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col gap-4 overflow-x-hidden px-4 pb-8 pt-6">
       <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-        <div className="min-w-0">
+        <div className="flex min-w-0 items-center gap-3">
+          <picture>
+            <source srcSet={logoDark} media="(prefers-color-scheme: dark)" />
+            <img
+              src={logoLight}
+              alt="AXChess logo"
+              className="h-10 w-10 shrink-0 rounded-2xl bg-card/70 p-1 shadow-sm"
+            />
+          </picture>
           <h1 className="truncate text-2xl font-semibold tracking-tight text-foreground">
-            Pastel Chess
+            AXChess
           </h1>
-          <p className="truncate text-xs text-muted-foreground">
-            Peer-to-peer chess, no server needed
-          </p>
         </div>
         <button
           onClick={toggleMute}
@@ -424,6 +502,12 @@ export default function ChessApp() {
       {peer.error ? (
         <p className="rounded-2xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {peer.error}
+        </p>
+      ) : null}
+
+      {notice ? (
+        <p className="rounded-2xl bg-secondary px-4 py-3 text-sm text-secondary-foreground">
+          {notice}
         </p>
       ) : null}
 
@@ -562,7 +646,20 @@ export default function ChessApp() {
             isYou
           />
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
+            <button
+              onClick={requestUndo}
+              disabled={
+                !!result ||
+                peer.status !== "connected" ||
+                undoState !== "idle" ||
+                game.history().length === 0
+              }
+              className="inline-flex h-13 items-center justify-center gap-1.5 rounded-[20px] bg-secondary py-3.5 text-sm font-medium text-secondary-foreground disabled:opacity-50"
+            >
+              <Undo2 className="h-4 w-4" />
+              {undoState === "sent" ? "Sent…" : "Undo"}
+            </button>
             <button
               onClick={resign}
               disabled={!!result}
@@ -572,7 +669,7 @@ export default function ChessApp() {
             </button>
             <button
               onClick={leave}
-              className="inline-flex items-center justify-center gap-2 rounded-[20px] bg-muted py-3.5 text-sm font-medium text-muted-foreground"
+              className="inline-flex items-center justify-center gap-1.5 rounded-[20px] bg-muted py-3.5 text-sm font-medium text-muted-foreground"
             >
               <LogOut className="h-4 w-4" />
               Leave
@@ -588,6 +685,31 @@ export default function ChessApp() {
             </button>
           ) : null}
         </section>
+      ) : null}
+
+      {undoState === "incoming" ? (
+        <div className="fixed inset-0 z-50 flex items-end bg-foreground/40 p-4">
+          <div className="w-full rounded-[28px] bg-card p-6 text-center">
+            <h3 className="text-lg font-semibold text-foreground">Undo requested</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Your opponent wants to take back their last move.
+            </p>
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              <button
+                onClick={declineUndo}
+                className="h-13 rounded-[20px] bg-secondary py-3.5 text-sm font-medium text-secondary-foreground"
+              >
+                Decline
+              </button>
+              <button
+                onClick={acceptUndo}
+                className="h-13 rounded-[20px] bg-primary py-3.5 text-sm font-medium text-primary-foreground"
+              >
+                Accept
+              </button>
+            </div>
+          </div>
+        </div>
       ) : null}
 
       {pendingPromotion ? (
@@ -642,6 +764,9 @@ export default function ChessApp() {
           </div>
         </div>
       ) : null}
+      <footer className="mt-auto pt-8 text-center text-[11px] font-medium tracking-wide text-muted-foreground">
+        made by 4ksh2574
+      </footer>
     </main>
   );
 }

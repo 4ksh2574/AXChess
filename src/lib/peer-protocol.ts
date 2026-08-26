@@ -64,6 +64,9 @@ export type PeerMessage =
     }
   | { t: "sync"; fen: string; moveCount: number; history: string[] }
   | { t: "resign"; color: "white" | "black" }
+  | { t: "undo-request" }
+  | { t: "undo-accept"; fen: string }
+  | { t: "undo-decline" }
   | { t: "rematch" };
 
 export type SavedGame = {
