@@ -75,7 +75,7 @@
   --secondary: oklch(0.93 0.03 310);
   --secondary-foreground: oklch(0.33 0.05 305);
   --muted: oklch(0.945 0.014 312);
-  --muted-foreground: oklch(0.52 0.026 305);
+  --muted-foreground: oklch(0.44 0.03 305);
   --accent: oklch(0.9 0.06 190);
   --accent-foreground: oklch(0.3 0.05 220);
   --destructive: oklch(0.52 0.19 27);
@@ -150,6 +150,12 @@
 
   body {
     background-color: var(--color-background);
+    background-image:
+      linear-gradient(oklch(0.983 0.008 315 / 0.88), oklch(0.97 0.012 320 / 0.72)),
+      url("/__l5e/assets-v1/57b8788d-ecf7-4b88-8d72-ed38e3b3c637/wallpaper.jpg");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
     color: var(--color-foreground);
     font-family: "Outfit", ui-sans-serif, system-ui, sans-serif;
     -webkit-tap-highlight-color: transparent;
