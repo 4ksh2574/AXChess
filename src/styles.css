@@ -151,7 +151,7 @@
   body {
     background-color: var(--color-background);
     background-image:
-      linear-gradient(oklch(0.983 0.008 315 / 0.88), oklch(0.97 0.012 320 / 0.72)),
+      linear-gradient(oklch(0.983 0.008 315 / 0.7), oklch(0.97 0.012 320 / 0.55)),
       url("/__l5e/assets-v1/57b8788d-ecf7-4b88-8d72-ed38e3b3c637/wallpaper.jpg");
     background-size: cover;
     background-position: center;
