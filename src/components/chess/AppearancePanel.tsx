@@ -75,20 +75,16 @@ function Slider({
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         aria-label={label}
-        className="mt-2 h-8 w-full cursor-pointer appearance-none rounded-full bg-transparent [&::-webkit-slider-runnable-track]:h-3 [&::-webkit-slider-runnable-track]:rounded-full [&::-moz-range-track]:h-3 [&::-moz-range-track]:rounded-full [&::-webkit-slider-thumb]:mt-[-7px] [&::-webkit-slider-thumb]:h-[26px] [&::-webkit-slider-thumb]:w-[26px] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-[3px] [&::-webkit-slider-thumb]:border-card [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:h-[26px] [&::-moz-range-thumb]:w-[26px] [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-[3px] [&::-moz-range-thumb]:border-card"
+        className="mt-2 h-7 w-full cursor-pointer appearance-none rounded-full [&::-webkit-slider-runnable-track]:h-3 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-transparent [&::-moz-range-track]:h-3 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-transparent [&::-webkit-slider-thumb]:mt-[-6px] [&::-webkit-slider-thumb]:h-[24px] [&::-webkit-slider-thumb]:w-[24px] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-[3px] [&::-webkit-slider-thumb]:border-card [&::-webkit-slider-thumb]:bg-[var(--thumb)] [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:h-[24px] [&::-moz-range-thumb]:w-[24px] [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-[3px] [&::-moz-range-thumb]:border-card [&::-moz-range-thumb]:bg-[var(--thumb)]"
         style={
           {
-            "--tw-track": trackImage,
-            accentColor: accent,
+            "--thumb": accent,
+            background: trackImage ?? `linear-gradient(90deg, var(--muted), ${accent})`,
+            backgroundSize: "100% 12px",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
           } as React.CSSProperties
         }
-      />
-      <div
-        className="-mt-[26px] mb-2 h-3 rounded-full"
-        style={{
-          background: trackImage ?? `linear-gradient(90deg, var(--muted), ${accent})`,
-          pointerEvents: "none",
-        }}
       />
     </div>
   );
