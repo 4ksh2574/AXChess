@@ -1,5 +1,5 @@
 import type { PieceRenderObject } from "react-chessboard";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactElement } from "react";
 import type { BoardTheme, PieceSetId } from "@/lib/board-appearance";
 
 /**
@@ -346,7 +346,7 @@ export function PieceSvg({
 
 /** Build the react-chessboard `pieces` map for a set + theme. */
 export function buildPieces(setId: PieceSetId, theme: BoardTheme): PieceRenderObject {
-  const entries: [string, (props?: { svgStyle?: CSSProperties }) => JSX.Element][] = [];
+  const entries: [string, (props?: { svgStyle?: CSSProperties }) => ReactElement][] = [];
   for (const color of ["w", "b"] as const) {
     for (const piece of PIECE_KEYS) {
       entries.push([

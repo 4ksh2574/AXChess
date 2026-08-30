@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { Chess, type Square } from "chess.js";
 import { Chessboard } from "react-chessboard";
 import {
@@ -12,6 +13,7 @@ import {
   WifiOff,
   RefreshCw,
   Undo2,
+  Palette,
 } from "lucide-react";
 import { usePeerGame } from "@/hooks/usePeerGame";
 import {
@@ -25,7 +27,7 @@ import {
   type PeerMessage,
 } from "@/lib/peer-protocol";
 import { sounds, unlockAudio, setMuted } from "@/lib/sounds";
-import { boardTheme, materialPieces } from "./MaterialPieces";
+import { useBoardAppearance } from "@/hooks/useBoardAppearance";
 import { PlayerCard } from "./PlayerCard";
 import logoLight from "@/assets/logo-light.png";
 import logoDark from "@/assets/logo-dark.png";
@@ -33,6 +35,7 @@ import logoDark from "@/assets/logo-dark.png";
 type Screen = "home" | "create" | "join" | "game";
 
 export default function ChessApp() {
+  const { theme, pieces } = useBoardAppearance();
   const gameRef = useRef(new Chess());
   const [fen, setFen] = useState(gameRef.current.fen());
   const [screen, setScreen] = useState<Screen>("home");
@@ -227,13 +230,13 @@ export default function ChessApp() {
   const squareStyles = useMemo(() => {
     const styles: Record<string, React.CSSProperties> = {};
     if (lastMove) {
-      styles[lastMove.from] = { backgroundColor: boardTheme.lastMove };
-      styles[lastMove.to] = { backgroundColor: boardTheme.lastMove };
+      styles[lastMove.from] = { backgroundColor: theme.board.lastMove };
+      styles[lastMove.to] = { backgroundColor: theme.board.lastMove };
     }
     if (selected) {
       styles[selected] = {
-        backgroundColor: boardTheme.selected,
-        boxShadow: "inset 0 0 0 4px rgba(103,80,164,0.55)",
+        backgroundColor: theme.board.selected,
+        boxShadow: `inset 0 0 0 4px ${theme.board.selectedRing}`,
       };
     }
     for (const target of legalTargets) {
@@ -241,8 +244,8 @@ export default function ChessApp() {
       styles[target] = {
         ...styles[target],
         background: hasPiece
-          ? `radial-gradient(circle, transparent 56%, ${boardTheme.dot} 58%)`
-          : `radial-gradient(circle, ${boardTheme.dot} 22%, transparent 24%)`,
+          ? `radial-gradient(circle, transparent 56%, ${theme.board.dot} 58%)`
+          : `radial-gradient(circle, ${theme.board.dot} 22%, transparent 24%)`,
       };
     }
     if (game.isCheck()) {
@@ -252,7 +255,7 @@ export default function ChessApp() {
           if (sq && sq.type === "k" && sq.color === kingColor) {
             styles[sq.square] = {
               ...styles[sq.square],
-              backgroundColor: boardTheme.check,
+              backgroundColor: theme.board.check,
               borderRadius: "50%",
             };
           }
@@ -261,7 +264,7 @@ export default function ChessApp() {
     }
     return styles;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fen, selected, lastMove, legalTargets]);
+  }, [fen, selected, lastMove, legalTargets, theme]);
 
   const commitMove = useCallback(
     (from: Square, to: Square, promotion?: string) => {
@@ -481,6 +484,14 @@ export default function ChessApp() {
             AXChess
           </h1>
         </div>
+        <div className="flex shrink-0 items-center gap-2">
+        <Link
+          to="/appearance"
+          aria-label="Board appearance"
+          className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-secondary text-secondary-foreground active:scale-95"
+        >
+          <Palette className="h-5 w-5" />
+        </Link>
         <button
           onClick={toggleMute}
           aria-label={muted ? "Unmute sounds" : "Mute sounds"}
@@ -488,6 +499,7 @@ export default function ChessApp() {
         >
           {muted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
         </button>
+        </div>
       </header>
 
       {screen !== "home" ? (
@@ -619,14 +631,14 @@ export default function ChessApp() {
                 options={{
                   position: fen,
                   boardOrientation: myColor,
-                  pieces: materialPieces,
+                  pieces,
                   squareStyles,
                   allowDragging: isMyTurn && !result,
                   animationDurationInMs: 180,
-                  lightSquareStyle: { backgroundColor: boardTheme.light },
-                  darkSquareStyle: { backgroundColor: boardTheme.dark },
-                  darkSquareNotationStyle: { color: boardTheme.light },
-                  lightSquareNotationStyle: { color: "#6750A4" },
+                  lightSquareStyle: { backgroundColor: theme.board.light },
+                  darkSquareStyle: { backgroundColor: theme.board.dark },
+                  darkSquareNotationStyle: { color: theme.board.darkNotation },
+                  lightSquareNotationStyle: { color: theme.board.lightNotation },
                   onSquareClick,
                   onPieceDrop: ({ sourceSquare, targetSquare }) => {
                     unlockAudio();
