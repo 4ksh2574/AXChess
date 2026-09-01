@@ -29,7 +29,7 @@ import {
 import { sounds, unlockAudio, setMuted } from "@/lib/sounds";
 import { useBoardAppearance } from "@/hooks/useBoardAppearance";
 import { PlayerCard } from "./PlayerCard";
-import { useAuth, resolveAvatar } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { User as UserIcon } from "lucide-react";
 import logoLight from "@/assets/logo-light.png";
 import logoDark from "@/assets/logo-dark.png";
