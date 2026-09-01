@@ -53,7 +53,7 @@ export const ICE_SERVERS: RTCIceServer[] = [
 ];
 
 export type PeerMessage =
-  | { t: "hello"; name: string; color: "white" | "black" }
+  | { t: "hello"; name: string; avatar?: string | undefined; color: "white" | "black" }
   | {
       t: "move";
       from: string;

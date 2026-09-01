@@ -4,6 +4,7 @@ type Props = {
   isTurn: boolean;
   captured: string[];
   isYou?: boolean;
+  avatarUrl?: string | null | undefined;
 };
 
 const GLYPHS: Record<string, string> = {
@@ -14,7 +15,7 @@ const GLYPHS: Record<string, string> = {
   q: "♛",
 };
 
-export function PlayerCard({ name, color, isTurn, captured, isYou }: Props) {
+export function PlayerCard({ name, color, isTurn, captured, isYou, avatarUrl }: Props) {
   return (
     <div
       className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[24px] px-4 py-3 transition-colors ${
@@ -22,13 +23,17 @@ export function PlayerCard({ name, color, isTurn, captured, isYou }: Props) {
       }`}
     >
       <div
-        className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl text-lg font-semibold ${
+        className={`grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-2xl text-lg font-semibold ${
           color === "white"
             ? "bg-secondary text-secondary-foreground"
             : "bg-primary text-primary-foreground"
         }`}
       >
-        {name.slice(0, 1).toUpperCase()}
+        {avatarUrl ? (
+          <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+        ) : (
+          name.slice(0, 1).toUpperCase()
+        )}
       </div>
       <div className="min-w-0">
         <p className="truncate text-sm font-semibold text-foreground">
