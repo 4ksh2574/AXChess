@@ -29,6 +29,8 @@ import {
 import { sounds, unlockAudio, setMuted } from "@/lib/sounds";
 import { useBoardAppearance } from "@/hooks/useBoardAppearance";
 import { PlayerCard } from "./PlayerCard";
+import { useAuth, resolveAvatar } from "@/hooks/useAuth";
+import { User as UserIcon } from "lucide-react";
 import logoLight from "@/assets/logo-light.png";
 import logoDark from "@/assets/logo-dark.png";
 
@@ -36,6 +38,11 @@ type Screen = "home" | "create" | "join" | "game";
 
 export default function ChessApp() {
   const { theme, pieces } = useBoardAppearance();
+  const { user, profile, avatarUrl } = useAuth();
+  const [opponent, setOpponent] = useState<{ name: string; avatar: string | null }>({
+    name: "",
+    avatar: null,
+  });
   const gameRef = useRef(new Chess());
   const [fen, setFen] = useState(gameRef.current.fen());
   const [screen, setScreen] = useState<Screen>("home");
@@ -70,6 +77,7 @@ export default function ChessApp() {
       const game = gameRef.current;
       if (msg.t === "hello") {
         sounds.connect();
+        setOpponent({ name: msg.name || "", avatar: msg.avatar ?? null });
         return;
       }
       if (msg.t === "move") {
@@ -155,7 +163,8 @@ export default function ChessApp() {
       const game = gameRef.current;
       peerSendRef.current?.({
         t: "hello",
-        name: role === "host" ? "Host" : "Guest",
+        name: identityRef.current.name || (role === "host" ? "Host" : "Guest"),
+        avatar: identityRef.current.avatar ?? undefined,
         color: role === "host" ? "white" : "black",
       });
       peerSendRef.current?.({
@@ -166,6 +175,13 @@ export default function ChessApp() {
       });
     },
   });
+  const identityRef = useRef<{ name: string; avatar: string | null }>({ name: "", avatar: null });
+  useEffect(() => {
+    identityRef.current = {
+      name: profile?.display_name || profile?.username || "",
+      avatar: avatarUrl,
+    };
+  }, [profile, avatarUrl]);
   const peerSendRef = useRef(peer.send);
   peerSendRef.current = peer.send;
 
@@ -465,7 +481,8 @@ export default function ChessApp() {
   }[peer.status];
   const StatusIcon = statusBadge.icon;
 
-  const opponentName = myColor === "white" ? "Black" : "White";
+  const myName = profile?.display_name || profile?.username || "You";
+  const opponentName = opponent.name || (myColor === "white" ? "Black" : "White");
   const opponentColor: "white" | "black" = myColor === "white" ? "black" : "white";
 
   return (
@@ -485,6 +502,17 @@ export default function ChessApp() {
           </h1>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+        <Link
+          to={user ? "/profile" : "/auth"}
+          aria-label={user ? "Your profile" : "Sign in"}
+          className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-2xl bg-secondary text-secondary-foreground active:scale-95"
+        >
+          {avatarUrl ? (
+            <img src={avatarUrl} alt="Your avatar" className="h-full w-full object-cover" />
+          ) : (
+            <UserIcon className="h-5 w-5" />
+          )}
+        </Link>
         <Link
           to="/appearance"
           aria-label="Board appearance"
@@ -620,6 +648,7 @@ export default function ChessApp() {
         <section className="flex flex-col gap-3">
           <PlayerCard
             name={opponentName}
+            avatarUrl={opponent.avatar}
             color={opponentColor}
             isTurn={turn === opponentColor && !result}
             captured={opponentColor === "white" ? captured.byWhite : captured.byBlack}
@@ -651,7 +680,8 @@ export default function ChessApp() {
           </div>
 
           <PlayerCard
-            name="You"
+            name={myName}
+            avatarUrl={avatarUrl}
             color={myColor}
             isTurn={turn === myColor && !result}
             captured={myColor === "white" ? captured.byWhite : captured.byBlack}
