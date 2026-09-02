@@ -350,7 +350,7 @@ export function buildPieces(setId: PieceSetId, theme: BoardTheme): PieceRenderOb
   for (const color of ["w", "b"] as const) {
     for (const piece of PIECE_KEYS) {
       entries.push([
-        `${color}${piece}`,
+        `${color}${piece.toUpperCase()}`,
         (props?: { svgStyle?: CSSProperties }) => (
           <PieceSvg
             setId={setId}
