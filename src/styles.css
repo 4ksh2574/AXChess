@@ -165,3 +165,19 @@
     -webkit-tap-highlight-color: transparent;
   }
 }
+
+/* Light-on-dark chrome for dark background photos (Ember, custom photos). */
+html.bg-dark-surface {
+  --foreground: oklch(0.97 0.01 320);
+  --card: oklch(0.24 0.02 320 / 0.72);
+  --card-foreground: oklch(0.97 0.01 320);
+  --popover: oklch(0.2 0.02 320 / 0.95);
+  --popover-foreground: oklch(0.97 0.01 320);
+  --secondary: oklch(0.34 0.03 320 / 0.8);
+  --secondary-foreground: oklch(0.97 0.01 320);
+  --muted: oklch(0.3 0.02 320 / 0.7);
+  --muted-foreground: oklch(0.84 0.015 320);
+  --border: oklch(1 0 0 / 14%);
+  --input: oklch(1 0 0 / 16%);
+  --primary-foreground: oklch(0.14 0.02 320);
+}
