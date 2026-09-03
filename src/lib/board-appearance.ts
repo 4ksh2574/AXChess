@@ -103,9 +103,13 @@ export function oklcha(L: number, C: number, H: number, alpha: number): string {
 /* ------------------------------------------------------------------ */
 
 export function deriveTheme(state: AppearanceState): BoardTheme {
+  const fixed = FIXED_PALETTES[state.paletteId];
+  if (fixed) return fixed.theme;
+
   const H = state.hue;
   const sat = state.saturation / 100;
   const contrast = state.contrast / 100;
+
 
   const chroma = 0.02 + sat * 0.11;
 
