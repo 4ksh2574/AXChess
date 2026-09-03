@@ -151,8 +151,12 @@
   body {
     background-color: var(--color-background);
     background-image:
-      linear-gradient(oklch(0.983 0.008 315 / 0.7), oklch(0.97 0.012 320 / 0.55)),
-      url("/__l5e/assets-v1/57b8788d-ecf7-4b88-8d72-ed38e3b3c637/wallpaper.jpg");
+      var(
+        --app-bg-scrim,
+        linear-gradient(oklch(0.983 0.008 315 / 0.7), oklch(0.97 0.012 320 / 0.55))
+      ),
+      var(--app-bg-image, url("/__l5e/assets-v1/57b8788d-ecf7-4b88-8d72-ed38e3b3c637/wallpaper.jpg"));
+
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -160,4 +164,20 @@
     font-family: "Outfit", ui-sans-serif, system-ui, sans-serif;
     -webkit-tap-highlight-color: transparent;
   }
+}
+
+/* Light-on-dark chrome for dark background photos (Ember, custom photos). */
+html.bg-dark-surface {
+  --foreground: oklch(0.97 0.01 320);
+  --card: oklch(0.24 0.02 320 / 0.72);
+  --card-foreground: oklch(0.97 0.01 320);
+  --popover: oklch(0.2 0.02 320 / 0.95);
+  --popover-foreground: oklch(0.97 0.01 320);
+  --secondary: oklch(0.34 0.03 320 / 0.8);
+  --secondary-foreground: oklch(0.97 0.01 320);
+  --muted: oklch(0.3 0.02 320 / 0.7);
+  --muted-foreground: oklch(0.84 0.015 320);
+  --border: oklch(1 0 0 / 14%);
+  --input: oklch(1 0 0 / 16%);
+  --primary-foreground: oklch(0.14 0.02 320);
 }
