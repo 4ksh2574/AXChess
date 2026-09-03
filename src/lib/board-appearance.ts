@@ -9,12 +9,18 @@
 
 export type PieceSetId = "rounded" | "classic" | "geometric" | "chunky";
 
+export type BackgroundId = "wallpaper" | "ember" | "plain" | "custom";
+
 export type AppearanceState = {
   pieceSet: PieceSetId;
   hue: number; // 0-360
   saturation: number; // 0-100
   contrast: number; // 0-100
+  /** "custom" = derived from the sliders, otherwise a fixed hand-tuned palette. */
+  paletteId: string;
+  background: BackgroundId;
 };
+
 
 export type PieceTone = {
   body: string;
