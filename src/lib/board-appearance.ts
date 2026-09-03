@@ -157,6 +157,114 @@ export function deriveTheme(state: AppearanceState): BoardTheme {
 }
 
 /* ------------------------------------------------------------------ */
+/* Fixed palettes                                                      */
+/* ------------------------------------------------------------------ */
+
+/**
+ * "Forest" reproduces the classic tournament look: soft grey-white and green
+ * squares with cream and warm-brown pieces.
+ */
+const forestTheme: BoardTheme = {
+  board: {
+    light: "#eeeeee",
+    dark: "#6fa475",
+    border: "#4f7d56",
+    selected: "rgba(247, 214, 92, 0.45)",
+    selectedRing: "rgba(226, 182, 51, 0.75)",
+    lastMove: "rgba(247, 220, 111, 0.5)",
+    check: "rgba(214, 72, 60, 0.5)",
+    dot: "rgba(58, 84, 60, 0.42)",
+    lightNotation: "#5c8a63",
+    darkNotation: "#eeeeee",
+  },
+  pieces: {
+    w: {
+      body: "#fbeadd",
+      edge: "#2f2a26",
+      halo: "rgba(47, 42, 38, 0.45)",
+      shadow: "rgba(47, 42, 38, 0.35)",
+    },
+    b: {
+      body: "#8a4535",
+      edge: "#2f1b14",
+      halo: "rgba(255, 250, 245, 0.5)",
+      shadow: "rgba(47, 27, 20, 0.4)",
+    },
+  },
+  accent: "#4f7d56",
+  accentSoft: "rgba(79, 125, 86, 0.16)",
+};
+
+export const FIXED_PALETTES: Record<string, { label: string; theme: BoardTheme }> = {
+  forest: { label: "Forest", theme: forestTheme },
+};
+
+/* ------------------------------------------------------------------ */
+/* Backgrounds                                                         */
+/* ------------------------------------------------------------------ */
+
+export type BackgroundOption = {
+  id: BackgroundId;
+  label: string;
+  url: string | null;
+  /** Overlay gradient painted above the image to keep text legible. */
+  scrim: string;
+  /** Whether the app chrome should switch to light-on-dark text. */
+  dark: boolean;
+};
+
+export const BACKGROUNDS: BackgroundOption[] = [
+  {
+    id: "wallpaper",
+    label: "Sunset",
+    url: "/__l5e/assets-v1/57b8788d-ecf7-4b88-8d72-ed38e3b3c637/wallpaper.jpg",
+    scrim: "linear-gradient(oklch(0.983 0.008 315 / 0.7), oklch(0.97 0.012 320 / 0.55))",
+    dark: false,
+  },
+  {
+    id: "ember",
+    label: "Ember",
+    url: "/__l5e/assets-v1/a17c43ad-37db-4f8d-abb4-b7e98ed98a76/ember.jpg",
+    scrim: "linear-gradient(rgba(8, 6, 8, 0.55), rgba(8, 6, 8, 0.72))",
+    dark: true,
+  },
+  {
+    id: "plain",
+    label: "Plain",
+    url: null,
+    scrim: "linear-gradient(oklch(0.983 0.008 315), oklch(0.96 0.014 320))",
+    dark: false,
+  },
+  {
+    id: "custom",
+    label: "My photo",
+    url: null,
+    scrim: "linear-gradient(rgba(10, 8, 12, 0.42), rgba(10, 8, 12, 0.6))",
+    dark: true,
+  },
+];
+
+const CUSTOM_BG_KEY = "axchess-custom-bg";
+
+export function loadCustomBackground(): string | null {
+  if (typeof localStorage === "undefined") return null;
+  try {
+    return localStorage.getItem(CUSTOM_BG_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function saveCustomBackground(dataUrl: string | null) {
+  try {
+    if (dataUrl) localStorage.setItem(CUSTOM_BG_KEY, dataUrl);
+    else localStorage.removeItem(CUSTOM_BG_KEY);
+  } catch {
+    /* storage unavailable */
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /* Presets + persistence                                               */
 /* ------------------------------------------------------------------ */
 
@@ -176,6 +284,8 @@ export const DEFAULT_APPEARANCE: AppearanceState = {
   hue: 300,
   saturation: 46,
   contrast: 46,
+  paletteId: "custom",
+  background: "wallpaper",
 };
 
 const STORAGE_KEY = "axchess-appearance";
@@ -191,6 +301,8 @@ export function loadAppearance(): AppearanceState {
       hue: Number(parsed.hue ?? DEFAULT_APPEARANCE.hue),
       saturation: Number(parsed.saturation ?? DEFAULT_APPEARANCE.saturation),
       contrast: Number(parsed.contrast ?? DEFAULT_APPEARANCE.contrast),
+      paletteId: parsed.paletteId ?? DEFAULT_APPEARANCE.paletteId,
+      background: (parsed.background ?? DEFAULT_APPEARANCE.background) as BackgroundId,
     };
   } catch {
     return DEFAULT_APPEARANCE;
@@ -204,3 +316,4 @@ export function saveAppearance(state: AppearanceState) {
     /* storage unavailable */
   }
 }
+
