@@ -826,6 +826,8 @@ export default function ChessApp() {
             color={opponentColor}
             isTurn={turn === opponentColor && !result}
             captured={opponentColor === "white" ? captured.byWhite : captured.byBlack}
+            clock={clocks ? formatClock(clocks[opponentColor]) : undefined}
+            lowTime={!!clocks && clocks[opponentColor] < 30_000}
           />
 
           <div className="overflow-hidden rounded-[28px] bg-card p-2 shadow-[0_10px_30px_-14px_rgba(74,68,88,0.55)]">
@@ -833,10 +835,10 @@ export default function ChessApp() {
               <Chessboard
                 options={{
                   position: fen,
-                  boardOrientation: myColor,
+                  boardOrientation: orientation,
                   pieces,
                   squareStyles,
-                  allowDragging: isMyTurn && !result,
+                  allowDragging: isMyTurn && !result && !thinking,
                   animationDurationInMs: 180,
                   lightSquareStyle: { backgroundColor: theme.board.light },
                   darkSquareStyle: { backgroundColor: theme.board.dark },
@@ -845,7 +847,7 @@ export default function ChessApp() {
                   onSquareClick,
                   onPieceDrop: ({ sourceSquare, targetSquare }) => {
                     unlockAudio();
-                    if (!targetSquare || result) return false;
+                    if (!targetSquare || result || thinking) return false;
                     return tryMove(sourceSquare as Square, targetSquare as Square);
                   },
                 }}
@@ -854,21 +856,40 @@ export default function ChessApp() {
           </div>
 
           <PlayerCard
-            name={myName}
-            avatarUrl={avatarUrl}
+            name={isLocal && mode === "pass" ? "Player 1" : myName}
+            avatarUrl={mode === "pass" ? null : avatarUrl}
             color={myColor}
             isTurn={turn === myColor && !result}
             captured={myColor === "white" ? captured.byWhite : captured.byBlack}
-            isYou
+            isYou={!isLocal || mode === "ai"}
+            clock={clocks ? formatClock(clocks[myColor]) : undefined}
+            lowTime={!!clocks && clocks[myColor] < 30_000}
           />
+
+          {mode === "pass" ? (
+            <button
+              onClick={() => setFlipBoard((v) => !v)}
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-[20px] bg-secondary text-sm font-medium text-secondary-foreground"
+            >
+              <RotateCw className="h-4 w-4" />
+              {flipBoard ? "Auto-flip board: on" : "Auto-flip board: off"}
+            </button>
+          ) : null}
+
+          {thinking ? (
+            <p className="text-center text-xs font-medium text-muted-foreground">
+              Computer is thinking…
+            </p>
+          ) : null}
 
           <div className="grid grid-cols-3 gap-3">
             <button
               onClick={requestUndo}
               disabled={
                 !!result ||
-                peer.status !== "connected" ||
+                (!isLocal && peer.status !== "connected") ||
                 undoState !== "idle" ||
+                thinking ||
                 game.history().length === 0
               }
               className="inline-flex h-13 items-center justify-center gap-1.5 rounded-[20px] bg-secondary py-3.5 text-sm font-medium text-secondary-foreground disabled:opacity-50"
@@ -891,6 +912,7 @@ export default function ChessApp() {
               Leave
             </button>
           </div>
+
 
           {peer.status === "disconnected" ? (
             <button
