@@ -5,6 +5,9 @@ type Props = {
   captured: string[];
   isYou?: boolean;
   avatarUrl?: string | null | undefined;
+  /** Formatted clock, e.g. "4:58". Omitted for untimed games. */
+  clock?: string | undefined;
+  lowTime?: boolean;
 };
 
 const GLYPHS: Record<string, string> = {
@@ -15,7 +18,17 @@ const GLYPHS: Record<string, string> = {
   q: "♛",
 };
 
-export function PlayerCard({ name, color, isTurn, captured, isYou, avatarUrl }: Props) {
+export function PlayerCard({
+  name,
+  color,
+  isTurn,
+  captured,
+  isYou,
+  avatarUrl,
+  clock,
+  lowTime,
+}: Props) {
+
   return (
     <div
       className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[24px] px-4 py-3 transition-colors ${
