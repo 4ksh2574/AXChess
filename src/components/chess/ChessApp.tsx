@@ -385,13 +385,26 @@ export default function ChessApp() {
   );
 
 
+  const resetClocks = useCallback((tc: TimeControl) => {
+    if (!tc) {
+      setClocks(null);
+      return;
+    }
+    const ms = tc.minutes * 60_000;
+    setClocks({ white: ms, black: ms });
+  }, []);
+
   const startHost = async () => {
     unlockAudio();
+    setMode("online");
+    modeRef.current = "online";
     gameRef.current = new Chess();
     refresh();
     setMyColor("white");
     setLastMove(null);
     setResigned(null);
+    setFlagged(null);
+    resetClocks(null);
     setScreen("create");
     await peer.host();
   };
@@ -403,12 +416,39 @@ export default function ChessApp() {
       peer.setError("Enter the full code, like chess-x7k9p2.");
       return;
     }
+    setMode("online");
+    modeRef.current = "online";
     gameRef.current = new Chess();
     refresh();
     setMyColor("black");
     setLastMove(null);
     setResigned(null);
+    setFlagged(null);
+    resetClocks(null);
     await peer.join(code);
+  };
+
+  /** Kick off an offline game (pass & play or vs the built-in engine). */
+  const startLocal = () => {
+    unlockAudio();
+    peer.destroy();
+    clearGame();
+    setMode(setupMode);
+    modeRef.current = setupMode;
+    gameRef.current = new Chess();
+    refresh();
+    setLastMove(null);
+    setSelected(null);
+    setResigned(null);
+    setFlagged(null);
+    setResultDismissed(false);
+    setUndoState("idle");
+    setOpponent({
+      name: setupMode === "ai" ? `Computer (${difficulty})` : "Player 2",
+      avatar: null,
+    });
+    resetClocks(timeControl);
+    setScreen("game");
   };
 
   const copy = async (value: string, kind: "code" | "link") => {
@@ -427,9 +467,13 @@ export default function ChessApp() {
     gameRef.current = new Chess();
     refresh();
     setScreen("home");
+    setMode("online");
+    modeRef.current = "online";
     setLastMove(null);
     setSelected(null);
     setResigned(null);
+    setFlagged(null);
+    setClocks(null);
     setUndoState("idle");
     if (typeof window !== "undefined" && window.location.hash) {
       window.history.replaceState(null, "", window.location.pathname);
@@ -437,16 +481,36 @@ export default function ChessApp() {
   };
 
   const resign = () => {
-    setResigned(myColor);
+    const loser = isLocal ? (gameRef.current.turn() === "w" ? "white" : "black") : myColor;
+    setResigned(loser);
     setResultDismissed(false);
     setUndoState("idle");
-    peer.send({ t: "resign", color: myColor });
+    if (!isLocal) peer.send({ t: "resign", color: myColor });
     sounds.end();
+  };
+
+  const localUndo = () => {
+    const current = gameRef.current;
+    if (current.history().length === 0) return;
+    current.undo();
+    // In engine games take back the computer's reply too.
+    if (modeRef.current === "ai" && current.history().length > 0) current.undo();
+    setLastMove(null);
+    setSelected(null);
+    setResigned(null);
+    setFlagged(null);
+    setResultDismissed(false);
+    refresh();
+    sounds.move();
   };
 
   const requestUndo = () => {
     unlockAudio();
     if (gameRef.current.history().length === 0) return;
+    if (isLocal) {
+      localUndo();
+      return;
+    }
     peer.send({ t: "undo-request" });
     setUndoState("sent");
     showNotice("Undo request sent to your opponent");
@@ -478,9 +542,11 @@ export default function ChessApp() {
     setLastMove(null);
     setSelected(null);
     setResigned(null);
+    setFlagged(null);
     setResultDismissed(false);
+    resetClocks(timeControl && isLocal ? timeControl : null);
     refresh();
-    peer.send({ t: "rematch" });
+    if (!isLocal) peer.send({ t: "rematch" });
   };
 
   const toggleMute = () => {
@@ -490,11 +556,29 @@ export default function ChessApp() {
   };
 
   const result = useMemo(() => {
+    const localNames = (color: "white" | "black") =>
+      mode === "ai"
+        ? color === myColor
+          ? "You"
+          : "Computer"
+        : color === "white"
+          ? "White"
+          : "Black";
+    if (flagged) {
+      const winner = flagged === "white" ? "black" : "white";
+      return isLocal
+        ? `${localNames(flagged)} ran out of time — ${localNames(winner)} wins`
+        : flagged === myColor
+          ? "Out of time — you lose"
+          : "Opponent ran out of time — you win";
+    }
     if (resigned) {
+      if (isLocal) return `${localNames(resigned)} resigned`;
       return resigned === myColor ? "You resigned" : "Opponent resigned — you win";
     }
     if (game.isCheckmate()) {
       const loser = game.turn() === "w" ? "white" : "black";
+      if (isLocal) return `Checkmate — ${localNames(loser === "white" ? "black" : "white")} wins`;
       return loser === myColor ? "Checkmate — you lose" : "Checkmate — you win!";
     }
     if (game.isStalemate()) return "Stalemate — draw";
@@ -503,8 +587,63 @@ export default function ChessApp() {
     if (game.isDraw()) return "Draw";
     return null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fen, resigned, myColor]);
+  }, [fen, resigned, myColor, flagged, isLocal, mode]);
   resultRef.current = result;
+
+  // Clocks: start ticking once the first move has been played.
+  const clockActive =
+    !!clocks &&
+    !result &&
+    screen === "game" &&
+    game.history().length > 0 &&
+    (isLocal || peer.status === "connected");
+
+  useEffect(() => {
+    if (!clockActive) return;
+    let last = Date.now();
+    const id = window.setInterval(() => {
+      const now = Date.now();
+      const delta = now - last;
+      last = now;
+      setClocks((prev) => {
+        if (!prev) return prev;
+        const side = gameRef.current.turn() === "w" ? "white" : "black";
+        const next = Math.max(0, prev[side] - delta);
+        if (next === 0) setFlagged(side);
+        return { ...prev, [side]: next };
+      });
+    }, 200);
+    return () => window.clearInterval(id);
+  }, [clockActive]);
+
+  useEffect(() => {
+    if (flagged) {
+      setResultDismissed(false);
+      sounds.end();
+    }
+  }, [flagged]);
+
+  // Offline engine: reply whenever it is the computer's turn.
+  useEffect(() => {
+    if (mode !== "ai" || screen !== "game" || result) return;
+    const side = gameRef.current.turn() === "w" ? "white" : "black";
+    if (side === myColor) return;
+    let cancelled = false;
+    setThinking(true);
+    const timer = window.setTimeout(() => {
+      void requestEngineMove(gameRef.current.fen(), difficulty).then((move) => {
+        if (cancelled) return;
+        setThinking(false);
+        if (move) commitMove(move.from as Square, move.to as Square, move.promotion);
+      });
+    }, 260);
+    return () => {
+      cancelled = true;
+      setThinking(false);
+      window.clearTimeout(timer);
+    };
+  }, [fen, mode, screen, result, myColor, difficulty, commitMove]);
+
 
   const statusBadge = {
     idle: { label: "Offline", tone: "bg-muted text-muted-foreground", icon: WifiOff },
