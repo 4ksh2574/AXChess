@@ -14,6 +14,10 @@ import {
   RefreshCw,
   Undo2,
   Palette,
+  Users,
+  Cpu,
+  ArrowLeft,
+  RotateCw,
 } from "lucide-react";
 import { usePeerGame } from "@/hooks/usePeerGame";
 import {
@@ -33,8 +37,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { User as UserIcon } from "lucide-react";
 import logoLight from "@/assets/logo-light.png";
 import logoDark from "@/assets/logo-dark.png";
+import { DIFFICULTIES, requestEngineMove, type Difficulty } from "@/lib/chess-ai";
+import { TIME_PRESETS, formatClock, type TimeControl } from "@/lib/time-control";
 
-type Screen = "home" | "create" | "join" | "game";
+type Screen = "home" | "create" | "join" | "setup" | "game";
+type Mode = "online" | "pass" | "ai";
 
 export default function ChessApp() {
   const { theme, pieces } = useBoardAppearance();
@@ -46,6 +53,15 @@ export default function ChessApp() {
   const gameRef = useRef(new Chess());
   const [fen, setFen] = useState(gameRef.current.fen());
   const [screen, setScreen] = useState<Screen>("home");
+  const [mode, setMode] = useState<Mode>("online");
+  const [difficulty, setDifficulty] = useState<Difficulty>("medium");
+  const [flipBoard, setFlipBoard] = useState(true);
+  const [setupMode, setSetupMode] = useState<Mode>("pass");
+  const [timeControl, setTimeControl] = useState<TimeControl>(null);
+  const [customMinutes, setCustomMinutes] = useState(15);
+  const [clocks, setClocks] = useState<{ white: number; black: number } | null>(null);
+  const [flagged, setFlagged] = useState<"white" | "black" | null>(null);
+  const [thinking, setThinking] = useState(false);
   const [myColor, setMyColor] = useState<"white" | "black">("white");
   const [selected, setSelected] = useState<Square | null>(null);
   const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null);
@@ -63,6 +79,10 @@ export default function ChessApp() {
   const resultRef = useRef<string | null>(null);
   const myColorRef = useRef(myColor);
   myColorRef.current = myColor;
+  const modeRef = useRef(mode);
+  modeRef.current = mode;
+  const isLocal = mode !== "online";
+
 
   const refresh = useCallback(() => setFen(gameRef.current.fen()), []);
 
