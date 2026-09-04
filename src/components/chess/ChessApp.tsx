@@ -322,23 +322,33 @@ export default function ChessApp() {
       if (current.isCheck() && !current.isGameOver()) sounds.check();
       if (current.isGameOver()) sounds.end();
       refresh();
-      peer.send({
-        t: "move",
-        from,
-        to,
-        ...(promotion ? { promotion } : {}),
-        fen: current.fen(),
-        moveCount: current.history().length,
-      });
+      if (modeRef.current === "online") {
+        peer.send({
+          t: "move",
+          from,
+          to,
+          ...(promotion ? { promotion } : {}),
+          fen: current.fen(),
+          moveCount: current.history().length,
+        });
+      }
       return true;
     },
     [peer, refresh],
   );
 
+  /** Which colour the human at the device may move right now. */
+  const movableColor = useCallback((): "white" | "black" | null => {
+    const current = gameRef.current;
+    const side = current.turn() === "w" ? "white" : "black";
+    if (modeRef.current === "pass") return side;
+    return side === myColorRef.current ? side : null;
+  }, []);
+
   const tryMove = useCallback(
     (from: Square, to: Square) => {
       const current = gameRef.current;
-      if (turn !== myColorRef.current) return false;
+      if (!movableColor()) return false;
       const options = current.moves({ square: from, verbose: true });
       const match = options.find((m) => m.to === to);
       if (!match) return false;
@@ -348,7 +358,7 @@ export default function ChessApp() {
       }
       return commitMove(from, to);
     },
-    [commitMove, turn],
+    [commitMove, movableColor],
   );
 
   const onSquareClick = useCallback(
@@ -364,14 +374,16 @@ export default function ChessApp() {
         if (tryMove(selected, sq)) return;
       }
       const piece = current.get(sq);
-      if (piece && (piece.color === "w" ? "white" : "black") === myColorRef.current) {
+      const allowed = movableColor();
+      if (piece && allowed && (piece.color === "w" ? "white" : "black") === allowed) {
         setSelected(sq);
       } else {
         setSelected(null);
       }
     },
-    [selected, tryMove],
+    [selected, tryMove, movableColor],
   );
+
 
   const startHost = async () => {
     unlockAudio();
