@@ -749,8 +749,164 @@ export default function ChessApp() {
               Join Game
             </button>
           </div>
+
+          <div className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)]">
+            <h2 className="text-lg font-semibold text-foreground">Play offline</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              No internet, no account needed — share this phone or take on the computer.
+            </p>
+            <button
+              onClick={() => {
+                unlockAudio();
+                setSetupMode("pass");
+                setScreen("setup");
+              }}
+              className="mt-4 inline-flex h-14 w-full items-center justify-center gap-2 rounded-[20px] bg-primary text-base font-medium text-primary-foreground active:scale-[0.99]"
+            >
+              <Users className="h-5 w-5" />
+              Pass &amp; Play
+            </button>
+            <button
+              onClick={() => {
+                unlockAudio();
+                setSetupMode("ai");
+                setScreen("setup");
+              }}
+              className="mt-3 inline-flex h-14 w-full items-center justify-center gap-2 rounded-[20px] bg-secondary text-base font-medium text-secondary-foreground active:scale-[0.99]"
+            >
+              <Cpu className="h-5 w-5" />
+              Play vs Computer
+            </button>
+          </div>
         </section>
       ) : null}
+
+      {screen === "setup" ? (
+        <section className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)]">
+          <h2 className="text-lg font-semibold text-foreground">
+            {setupMode === "ai" ? "Play vs Computer" : "Pass &amp; Play"}
+          </h2>
+
+          {setupMode === "ai" ? (
+            <>
+              <p className="mt-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Difficulty
+              </p>
+              <div className="mt-2 grid gap-2">
+                {DIFFICULTIES.map((d) => (
+                  <button
+                    key={d.id}
+                    onClick={() => setDifficulty(d.id)}
+                    className={`flex items-center justify-between rounded-[20px] px-4 py-3 text-left text-sm ${
+                      difficulty === d.id
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-foreground"
+                    }`}
+                  >
+                    <span className="font-medium">{d.label}</span>
+                    <span className="text-xs opacity-80">{d.blurb}</span>
+                  </button>
+                ))}
+              </div>
+
+              <p className="mt-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                You play
+              </p>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                {(["white", "black"] as const).map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setMyColor(c)}
+                    className={`h-12 rounded-[20px] text-sm font-medium capitalize ${
+                      myColor === c
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-foreground"
+                    }`}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : null}
+
+          <p className="mt-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Time control
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button
+              onClick={() => setTimeControl(null)}
+              className={`h-11 rounded-full px-4 text-sm font-medium ${
+                timeControl === null ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
+              }`}
+            >
+              No clock
+            </button>
+            {TIME_PRESETS.map((p) => (
+              <button
+                key={p.minutes}
+                onClick={() => setTimeControl({ minutes: p.minutes })}
+                className={`h-11 rounded-full px-4 text-sm font-medium ${
+                  timeControl?.minutes === p.minutes
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-foreground"
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+            <button
+              onClick={() => setTimeControl({ minutes: customMinutes })}
+              className={`h-11 rounded-full px-4 text-sm font-medium ${
+                timeControl && !TIME_PRESETS.some((p) => p.minutes === timeControl.minutes)
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-foreground"
+              }`}
+            >
+              Custom
+            </button>
+          </div>
+
+          <div className="mt-4">
+            <label
+              htmlFor="custom-minutes"
+              className="flex items-center justify-between text-sm text-muted-foreground"
+            >
+              <span>Custom minutes</span>
+              <span className="font-semibold text-foreground">{customMinutes} min</span>
+            </label>
+            <input
+              id="custom-minutes"
+              type="range"
+              min={1}
+              max={90}
+              step={1}
+              value={customMinutes}
+              onChange={(e) => {
+                const v = Number(e.target.value);
+                setCustomMinutes(v);
+                setTimeControl({ minutes: v });
+              }}
+              className="mt-2 h-11 w-full accent-[var(--primary)]"
+            />
+          </div>
+
+          <button
+            onClick={startLocal}
+            className="mt-5 h-14 w-full rounded-[20px] bg-primary text-base font-medium text-primary-foreground active:scale-[0.99]"
+          >
+            Start game
+          </button>
+          <button
+            onClick={() => setScreen("home")}
+            className="mt-2 inline-flex h-12 w-full items-center justify-center gap-1.5 rounded-[20px] text-sm font-medium text-muted-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </button>
+        </section>
+      ) : null}
+
 
       {screen === "create" ? (
         <section className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)]">
