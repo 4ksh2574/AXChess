@@ -243,7 +243,10 @@ export default function ChessApp() {
 
   const game = gameRef.current;
   const turn = game.turn() === "w" ? "white" : "black";
-  const isMyTurn = turn === myColor && peer.status === "connected";
+  const isMyTurn = isLocal
+    ? mode === "pass" || turn === myColor
+    : turn === myColor && peer.status === "connected";
+
 
   const captured = useMemo(() => {
     const byWhite: string[] = [];
