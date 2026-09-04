@@ -14,6 +14,10 @@ import {
   RefreshCw,
   Undo2,
   Palette,
+  Users,
+  Cpu,
+  ArrowLeft,
+  RotateCw,
 } from "lucide-react";
 import { usePeerGame } from "@/hooks/usePeerGame";
 import {
@@ -33,8 +37,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { User as UserIcon } from "lucide-react";
 import logoLight from "@/assets/logo-light.png";
 import logoDark from "@/assets/logo-dark.png";
+import { DIFFICULTIES, requestEngineMove, type Difficulty } from "@/lib/chess-ai";
+import { TIME_PRESETS, formatClock, type TimeControl } from "@/lib/time-control";
 
-type Screen = "home" | "create" | "join" | "game";
+type Screen = "home" | "create" | "join" | "setup" | "game";
+type Mode = "online" | "pass" | "ai";
 
 export default function ChessApp() {
   const { theme, pieces } = useBoardAppearance();
@@ -46,6 +53,15 @@ export default function ChessApp() {
   const gameRef = useRef(new Chess());
   const [fen, setFen] = useState(gameRef.current.fen());
   const [screen, setScreen] = useState<Screen>("home");
+  const [mode, setMode] = useState<Mode>("online");
+  const [difficulty, setDifficulty] = useState<Difficulty>("medium");
+  const [flipBoard, setFlipBoard] = useState(true);
+  const [setupMode, setSetupMode] = useState<Mode>("pass");
+  const [timeControl, setTimeControl] = useState<TimeControl>(null);
+  const [customMinutes, setCustomMinutes] = useState(15);
+  const [clocks, setClocks] = useState<{ white: number; black: number } | null>(null);
+  const [flagged, setFlagged] = useState<"white" | "black" | null>(null);
+  const [thinking, setThinking] = useState(false);
   const [myColor, setMyColor] = useState<"white" | "black">("white");
   const [selected, setSelected] = useState<Square | null>(null);
   const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null);
@@ -63,6 +79,10 @@ export default function ChessApp() {
   const resultRef = useRef<string | null>(null);
   const myColorRef = useRef(myColor);
   myColorRef.current = myColor;
+  const modeRef = useRef(mode);
+  modeRef.current = mode;
+  const isLocal = mode !== "online";
+
 
   const refresh = useCallback(() => setFen(gameRef.current.fen()), []);
 
@@ -223,7 +243,10 @@ export default function ChessApp() {
 
   const game = gameRef.current;
   const turn = game.turn() === "w" ? "white" : "black";
-  const isMyTurn = turn === myColor && peer.status === "connected";
+  const isMyTurn = isLocal
+    ? mode === "pass" || turn === myColor
+    : turn === myColor && peer.status === "connected";
+
 
   const captured = useMemo(() => {
     const byWhite: string[] = [];
@@ -299,23 +322,33 @@ export default function ChessApp() {
       if (current.isCheck() && !current.isGameOver()) sounds.check();
       if (current.isGameOver()) sounds.end();
       refresh();
-      peer.send({
-        t: "move",
-        from,
-        to,
-        ...(promotion ? { promotion } : {}),
-        fen: current.fen(),
-        moveCount: current.history().length,
-      });
+      if (modeRef.current === "online") {
+        peer.send({
+          t: "move",
+          from,
+          to,
+          ...(promotion ? { promotion } : {}),
+          fen: current.fen(),
+          moveCount: current.history().length,
+        });
+      }
       return true;
     },
     [peer, refresh],
   );
 
+  /** Which colour the human at the device may move right now. */
+  const movableColor = useCallback((): "white" | "black" | null => {
+    const current = gameRef.current;
+    const side = current.turn() === "w" ? "white" : "black";
+    if (modeRef.current === "pass") return side;
+    return side === myColorRef.current ? side : null;
+  }, []);
+
   const tryMove = useCallback(
     (from: Square, to: Square) => {
       const current = gameRef.current;
-      if (turn !== myColorRef.current) return false;
+      if (!movableColor()) return false;
       const options = current.moves({ square: from, verbose: true });
       const match = options.find((m) => m.to === to);
       if (!match) return false;
@@ -325,7 +358,7 @@ export default function ChessApp() {
       }
       return commitMove(from, to);
     },
-    [commitMove, turn],
+    [commitMove, movableColor],
   );
 
   const onSquareClick = useCallback(
@@ -341,22 +374,37 @@ export default function ChessApp() {
         if (tryMove(selected, sq)) return;
       }
       const piece = current.get(sq);
-      if (piece && (piece.color === "w" ? "white" : "black") === myColorRef.current) {
+      const allowed = movableColor();
+      if (piece && allowed && (piece.color === "w" ? "white" : "black") === allowed) {
         setSelected(sq);
       } else {
         setSelected(null);
       }
     },
-    [selected, tryMove],
+    [selected, tryMove, movableColor],
   );
+
+
+  const resetClocks = useCallback((tc: TimeControl) => {
+    if (!tc) {
+      setClocks(null);
+      return;
+    }
+    const ms = tc.minutes * 60_000;
+    setClocks({ white: ms, black: ms });
+  }, []);
 
   const startHost = async () => {
     unlockAudio();
+    setMode("online");
+    modeRef.current = "online";
     gameRef.current = new Chess();
     refresh();
     setMyColor("white");
     setLastMove(null);
     setResigned(null);
+    setFlagged(null);
+    resetClocks(null);
     setScreen("create");
     await peer.host();
   };
@@ -368,12 +416,39 @@ export default function ChessApp() {
       peer.setError("Enter the full code, like chess-x7k9p2.");
       return;
     }
+    setMode("online");
+    modeRef.current = "online";
     gameRef.current = new Chess();
     refresh();
     setMyColor("black");
     setLastMove(null);
     setResigned(null);
+    setFlagged(null);
+    resetClocks(null);
     await peer.join(code);
+  };
+
+  /** Kick off an offline game (pass & play or vs the built-in engine). */
+  const startLocal = () => {
+    unlockAudio();
+    peer.destroy();
+    clearGame();
+    setMode(setupMode);
+    modeRef.current = setupMode;
+    gameRef.current = new Chess();
+    refresh();
+    setLastMove(null);
+    setSelected(null);
+    setResigned(null);
+    setFlagged(null);
+    setResultDismissed(false);
+    setUndoState("idle");
+    setOpponent({
+      name: setupMode === "ai" ? `Computer (${difficulty})` : "Player 2",
+      avatar: null,
+    });
+    resetClocks(timeControl);
+    setScreen("game");
   };
 
   const copy = async (value: string, kind: "code" | "link") => {
@@ -392,9 +467,13 @@ export default function ChessApp() {
     gameRef.current = new Chess();
     refresh();
     setScreen("home");
+    setMode("online");
+    modeRef.current = "online";
     setLastMove(null);
     setSelected(null);
     setResigned(null);
+    setFlagged(null);
+    setClocks(null);
     setUndoState("idle");
     if (typeof window !== "undefined" && window.location.hash) {
       window.history.replaceState(null, "", window.location.pathname);
@@ -402,16 +481,36 @@ export default function ChessApp() {
   };
 
   const resign = () => {
-    setResigned(myColor);
+    const loser = isLocal ? (gameRef.current.turn() === "w" ? "white" : "black") : myColor;
+    setResigned(loser);
     setResultDismissed(false);
     setUndoState("idle");
-    peer.send({ t: "resign", color: myColor });
+    if (!isLocal) peer.send({ t: "resign", color: myColor });
     sounds.end();
+  };
+
+  const localUndo = () => {
+    const current = gameRef.current;
+    if (current.history().length === 0) return;
+    current.undo();
+    // In engine games take back the computer's reply too.
+    if (modeRef.current === "ai" && current.history().length > 0) current.undo();
+    setLastMove(null);
+    setSelected(null);
+    setResigned(null);
+    setFlagged(null);
+    setResultDismissed(false);
+    refresh();
+    sounds.move();
   };
 
   const requestUndo = () => {
     unlockAudio();
     if (gameRef.current.history().length === 0) return;
+    if (isLocal) {
+      localUndo();
+      return;
+    }
     peer.send({ t: "undo-request" });
     setUndoState("sent");
     showNotice("Undo request sent to your opponent");
@@ -443,9 +542,11 @@ export default function ChessApp() {
     setLastMove(null);
     setSelected(null);
     setResigned(null);
+    setFlagged(null);
     setResultDismissed(false);
+    resetClocks(timeControl && isLocal ? timeControl : null);
     refresh();
-    peer.send({ t: "rematch" });
+    if (!isLocal) peer.send({ t: "rematch" });
   };
 
   const toggleMute = () => {
@@ -455,11 +556,29 @@ export default function ChessApp() {
   };
 
   const result = useMemo(() => {
+    const localNames = (color: "white" | "black") =>
+      mode === "ai"
+        ? color === myColor
+          ? "You"
+          : "Computer"
+        : color === "white"
+          ? "White"
+          : "Black";
+    if (flagged) {
+      const winner = flagged === "white" ? "black" : "white";
+      return isLocal
+        ? `${localNames(flagged)} ran out of time — ${localNames(winner)} wins`
+        : flagged === myColor
+          ? "Out of time — you lose"
+          : "Opponent ran out of time — you win";
+    }
     if (resigned) {
+      if (isLocal) return `${localNames(resigned)} resigned`;
       return resigned === myColor ? "You resigned" : "Opponent resigned — you win";
     }
     if (game.isCheckmate()) {
       const loser = game.turn() === "w" ? "white" : "black";
+      if (isLocal) return `Checkmate — ${localNames(loser === "white" ? "black" : "white")} wins`;
       return loser === myColor ? "Checkmate — you lose" : "Checkmate — you win!";
     }
     if (game.isStalemate()) return "Stalemate — draw";
@@ -468,8 +587,63 @@ export default function ChessApp() {
     if (game.isDraw()) return "Draw";
     return null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fen, resigned, myColor]);
+  }, [fen, resigned, myColor, flagged, isLocal, mode]);
   resultRef.current = result;
+
+  // Clocks: start ticking once the first move has been played.
+  const clockActive =
+    !!clocks &&
+    !result &&
+    screen === "game" &&
+    game.history().length > 0 &&
+    (isLocal || peer.status === "connected");
+
+  useEffect(() => {
+    if (!clockActive) return;
+    let last = Date.now();
+    const id = window.setInterval(() => {
+      const now = Date.now();
+      const delta = now - last;
+      last = now;
+      setClocks((prev) => {
+        if (!prev) return prev;
+        const side = gameRef.current.turn() === "w" ? "white" : "black";
+        const next = Math.max(0, prev[side] - delta);
+        if (next === 0) setFlagged(side);
+        return { ...prev, [side]: next };
+      });
+    }, 200);
+    return () => window.clearInterval(id);
+  }, [clockActive]);
+
+  useEffect(() => {
+    if (flagged) {
+      setResultDismissed(false);
+      sounds.end();
+    }
+  }, [flagged]);
+
+  // Offline engine: reply whenever it is the computer's turn.
+  useEffect(() => {
+    if (mode !== "ai" || screen !== "game" || result) return;
+    const side = gameRef.current.turn() === "w" ? "white" : "black";
+    if (side === myColor) return;
+    let cancelled = false;
+    setThinking(true);
+    const timer = window.setTimeout(() => {
+      void requestEngineMove(gameRef.current.fen(), difficulty).then((move) => {
+        if (cancelled) return;
+        setThinking(false);
+        if (move) commitMove(move.from as Square, move.to as Square, move.promotion);
+      });
+    }, 260);
+    return () => {
+      cancelled = true;
+      setThinking(false);
+      window.clearTimeout(timer);
+    };
+  }, [fen, mode, screen, result, myColor, difficulty, commitMove]);
+
 
   const statusBadge = {
     idle: { label: "Offline", tone: "bg-muted text-muted-foreground", icon: WifiOff },
@@ -575,8 +749,164 @@ export default function ChessApp() {
               Join Game
             </button>
           </div>
+
+          <div className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)]">
+            <h2 className="text-lg font-semibold text-foreground">Play offline</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              No internet, no account needed — share this phone or take on the computer.
+            </p>
+            <button
+              onClick={() => {
+                unlockAudio();
+                setSetupMode("pass");
+                setScreen("setup");
+              }}
+              className="mt-4 inline-flex h-14 w-full items-center justify-center gap-2 rounded-[20px] bg-primary text-base font-medium text-primary-foreground active:scale-[0.99]"
+            >
+              <Users className="h-5 w-5" />
+              Pass &amp; Play
+            </button>
+            <button
+              onClick={() => {
+                unlockAudio();
+                setSetupMode("ai");
+                setScreen("setup");
+              }}
+              className="mt-3 inline-flex h-14 w-full items-center justify-center gap-2 rounded-[20px] bg-secondary text-base font-medium text-secondary-foreground active:scale-[0.99]"
+            >
+              <Cpu className="h-5 w-5" />
+              Play vs Computer
+            </button>
+          </div>
         </section>
       ) : null}
+
+      {screen === "setup" ? (
+        <section className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)]">
+          <h2 className="text-lg font-semibold text-foreground">
+            {setupMode === "ai" ? "Play vs Computer" : "Pass &amp; Play"}
+          </h2>
+
+          {setupMode === "ai" ? (
+            <>
+              <p className="mt-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Difficulty
+              </p>
+              <div className="mt-2 grid gap-2">
+                {DIFFICULTIES.map((d) => (
+                  <button
+                    key={d.id}
+                    onClick={() => setDifficulty(d.id)}
+                    className={`flex items-center justify-between rounded-[20px] px-4 py-3 text-left text-sm ${
+                      difficulty === d.id
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-foreground"
+                    }`}
+                  >
+                    <span className="font-medium">{d.label}</span>
+                    <span className="text-xs opacity-80">{d.blurb}</span>
+                  </button>
+                ))}
+              </div>
+
+              <p className="mt-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                You play
+              </p>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                {(["white", "black"] as const).map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setMyColor(c)}
+                    className={`h-12 rounded-[20px] text-sm font-medium capitalize ${
+                      myColor === c
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-foreground"
+                    }`}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : null}
+
+          <p className="mt-4 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Time control
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button
+              onClick={() => setTimeControl(null)}
+              className={`h-11 rounded-full px-4 text-sm font-medium ${
+                timeControl === null ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
+              }`}
+            >
+              No clock
+            </button>
+            {TIME_PRESETS.map((p) => (
+              <button
+                key={p.minutes}
+                onClick={() => setTimeControl({ minutes: p.minutes })}
+                className={`h-11 rounded-full px-4 text-sm font-medium ${
+                  timeControl?.minutes === p.minutes
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-foreground"
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+            <button
+              onClick={() => setTimeControl({ minutes: customMinutes })}
+              className={`h-11 rounded-full px-4 text-sm font-medium ${
+                timeControl && !TIME_PRESETS.some((p) => p.minutes === timeControl.minutes)
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-foreground"
+              }`}
+            >
+              Custom
+            </button>
+          </div>
+
+          <div className="mt-4">
+            <label
+              htmlFor="custom-minutes"
+              className="flex items-center justify-between text-sm text-muted-foreground"
+            >
+              <span>Custom minutes</span>
+              <span className="font-semibold text-foreground">{customMinutes} min</span>
+            </label>
+            <input
+              id="custom-minutes"
+              type="range"
+              min={1}
+              max={90}
+              step={1}
+              value={customMinutes}
+              onChange={(e) => {
+                const v = Number(e.target.value);
+                setCustomMinutes(v);
+                setTimeControl({ minutes: v });
+              }}
+              className="mt-2 h-11 w-full accent-[var(--primary)]"
+            />
+          </div>
+
+          <button
+            onClick={startLocal}
+            className="mt-5 h-14 w-full rounded-[20px] bg-primary text-base font-medium text-primary-foreground active:scale-[0.99]"
+          >
+            Start game
+          </button>
+          <button
+            onClick={() => setScreen("home")}
+            className="mt-2 inline-flex h-12 w-full items-center justify-center gap-1.5 rounded-[20px] text-sm font-medium text-muted-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </button>
+        </section>
+      ) : null}
+
 
       {screen === "create" ? (
         <section className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)]">
@@ -652,6 +982,8 @@ export default function ChessApp() {
             color={opponentColor}
             isTurn={turn === opponentColor && !result}
             captured={opponentColor === "white" ? captured.byWhite : captured.byBlack}
+            clock={clocks ? formatClock(clocks[opponentColor]) : undefined}
+            lowTime={!!clocks && clocks[opponentColor] < 30_000}
           />
 
           <div className="overflow-hidden rounded-[28px] bg-card p-2 shadow-[0_10px_30px_-14px_rgba(74,68,88,0.55)]">
@@ -659,10 +991,10 @@ export default function ChessApp() {
               <Chessboard
                 options={{
                   position: fen,
-                  boardOrientation: myColor,
+                  boardOrientation: orientation,
                   pieces,
                   squareStyles,
-                  allowDragging: isMyTurn && !result,
+                  allowDragging: isMyTurn && !result && !thinking,
                   animationDurationInMs: 180,
                   lightSquareStyle: { backgroundColor: theme.board.light },
                   darkSquareStyle: { backgroundColor: theme.board.dark },
@@ -671,7 +1003,7 @@ export default function ChessApp() {
                   onSquareClick,
                   onPieceDrop: ({ sourceSquare, targetSquare }) => {
                     unlockAudio();
-                    if (!targetSquare || result) return false;
+                    if (!targetSquare || result || thinking) return false;
                     return tryMove(sourceSquare as Square, targetSquare as Square);
                   },
                 }}
@@ -680,21 +1012,40 @@ export default function ChessApp() {
           </div>
 
           <PlayerCard
-            name={myName}
-            avatarUrl={avatarUrl}
+            name={isLocal && mode === "pass" ? "Player 1" : myName}
+            avatarUrl={mode === "pass" ? null : avatarUrl}
             color={myColor}
             isTurn={turn === myColor && !result}
             captured={myColor === "white" ? captured.byWhite : captured.byBlack}
-            isYou
+            isYou={!isLocal || mode === "ai"}
+            clock={clocks ? formatClock(clocks[myColor]) : undefined}
+            lowTime={!!clocks && clocks[myColor] < 30_000}
           />
+
+          {mode === "pass" ? (
+            <button
+              onClick={() => setFlipBoard((v) => !v)}
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-[20px] bg-secondary text-sm font-medium text-secondary-foreground"
+            >
+              <RotateCw className="h-4 w-4" />
+              {flipBoard ? "Auto-flip board: on" : "Auto-flip board: off"}
+            </button>
+          ) : null}
+
+          {thinking ? (
+            <p className="text-center text-xs font-medium text-muted-foreground">
+              Computer is thinking…
+            </p>
+          ) : null}
 
           <div className="grid grid-cols-3 gap-3">
             <button
               onClick={requestUndo}
               disabled={
                 !!result ||
-                peer.status !== "connected" ||
+                (!isLocal && peer.status !== "connected") ||
                 undoState !== "idle" ||
+                thinking ||
                 game.history().length === 0
               }
               className="inline-flex h-13 items-center justify-center gap-1.5 rounded-[20px] bg-secondary py-3.5 text-sm font-medium text-secondary-foreground disabled:opacity-50"
@@ -717,6 +1068,7 @@ export default function ChessApp() {
               Leave
             </button>
           </div>
+
 
           {peer.status === "disconnected" ? (
             <button
