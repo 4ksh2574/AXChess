@@ -61,11 +61,24 @@ export function PlayerCard({
           )}
         </p>
       </div>
-      {isTurn ? (
+      {clock ? (
+        <span
+          className={`shrink-0 rounded-full px-3 py-1 font-mono text-sm font-semibold tabular-nums ${
+            lowTime
+              ? "bg-destructive/15 text-destructive"
+              : isTurn
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground"
+          }`}
+        >
+          {clock}
+        </span>
+      ) : isTurn ? (
         <span className="shrink-0 rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
           Turn
         </span>
       ) : null}
+
     </div>
   );
 }
