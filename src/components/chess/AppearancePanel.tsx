@@ -238,7 +238,7 @@ export function AppearancePanel() {
           min={0}
           max={360}
           gradient={hueGradient}
-          onChange={(hue) => setAppearance({ hue })}
+          onChange={(hue) => setAppearance({ hue, paletteId: "custom" })}
         />
         <Slider
           label="Saturation"
@@ -246,7 +246,7 @@ export function AppearancePanel() {
           min={0}
           max={100}
           gradient={`linear-gradient(to right, #d8d5da, ${theme.accent})`}
-          onChange={(saturation) => setAppearance({ saturation })}
+          onChange={(saturation) => setAppearance({ saturation, paletteId: "custom" })}
         />
         <Slider
           label="Contrast"
@@ -254,7 +254,7 @@ export function AppearancePanel() {
           min={0}
           max={100}
           gradient={`linear-gradient(to right, ${theme.board.light}, ${theme.board.dark})`}
-          onChange={(contrast) => setAppearance({ contrast })}
+          onChange={(contrast) => setAppearance({ contrast, paletteId: "custom" })}
         />
       </section>
 
