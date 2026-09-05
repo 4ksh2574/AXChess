@@ -58,7 +58,10 @@ function Slider({
 }
 
 export function AppearancePanel() {
-  const { appearance, theme, setAppearance } = useBoardAppearance();
+  const { appearance, theme, setAppearance, setCustomBackground, customBackground } =
+    useBoardAppearance();
+  const fileRef = useRef<HTMLInputElement>(null);
+
 
   const hueGradient = `linear-gradient(to right, ${[0, 60, 120, 180, 240, 300, 360]
     .map((h) => `hsl(${h} 70% 62%)`)
