@@ -658,6 +658,9 @@ export default function ChessApp() {
   const myName = profile?.display_name || profile?.username || "You";
   const opponentName = opponent.name || (myColor === "white" ? "Black" : "White");
   const opponentColor: "white" | "black" = myColor === "white" ? "black" : "white";
+  const orientation: "white" | "black" =
+    mode === "pass" ? (flipBoard ? turn : "white") : myColor;
+
 
   return (
     <main className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col gap-4 overflow-x-hidden px-4 pb-8 pt-6">
@@ -704,7 +707,7 @@ export default function ChessApp() {
         </div>
       </header>
 
-      {screen !== "home" ? (
+      {screen !== "home" && screen !== "setup" && !isLocal ? (
         <div
           className={`inline-flex w-fit items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium ${statusBadge.tone}`}
         >
@@ -784,7 +787,7 @@ export default function ChessApp() {
       {screen === "setup" ? (
         <section className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)]">
           <h2 className="text-lg font-semibold text-foreground">
-            {setupMode === "ai" ? "Play vs Computer" : "Pass &amp; Play"}
+            {setupMode === "ai" ? "Play vs Computer" : "Pass & Play"}
           </h2>
 
           {setupMode === "ai" ? (
