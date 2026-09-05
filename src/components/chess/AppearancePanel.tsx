@@ -1,6 +1,27 @@
+import { useRef } from "react";
 import { PIECE_SETS, PieceSvg } from "./pieceSets";
-import { PRESETS, type PieceSetId } from "@/lib/board-appearance";
+import {
+  BACKGROUNDS,
+  FIXED_PALETTES,
+  PRESETS,
+  type PieceSetId,
+} from "@/lib/board-appearance";
 import { useBoardAppearance } from "@/hooks/useBoardAppearance";
+
+/** Downscale a gallery photo so it fits comfortably in local storage. */
+async function toStoredDataUrl(file: File): Promise<string> {
+  const bitmap = await createImageBitmap(file);
+  const maxW = 900;
+  const scale = Math.min(1, maxW / bitmap.width);
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("no canvas");
+  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL("image/jpeg", 0.82);
+}
+
 
 function Slider({
   label,
