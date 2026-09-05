@@ -658,6 +658,9 @@ export default function ChessApp() {
   const myName = profile?.display_name || profile?.username || "You";
   const opponentName = opponent.name || (myColor === "white" ? "Black" : "White");
   const opponentColor: "white" | "black" = myColor === "white" ? "black" : "white";
+  const orientation: "white" | "black" =
+    mode === "pass" ? (flipBoard ? turn : "white") : myColor;
+
 
   return (
     <main className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col gap-4 overflow-x-hidden px-4 pb-8 pt-6">
