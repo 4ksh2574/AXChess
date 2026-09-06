@@ -786,6 +786,9 @@ export default function ChessApp() {
 
       {screen === "setup" ? (
         <section className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)] md:mx-auto md:w-full md:max-w-xl md:p-7">
+          <h2 className="text-lg font-semibold text-foreground">
+            {setupMode === "ai" ? "Play vs Computer" : "Pass & Play"}
+          </h2>
 
           {setupMode === "ai" ? (
             <>
@@ -909,7 +912,7 @@ export default function ChessApp() {
 
 
       {screen === "create" ? (
-        <section className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)]">
+        <section className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)] md:mx-auto md:w-full md:max-w-xl md:p-7">
           <h2 className="text-lg font-semibold text-foreground">Your game code</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Share this with your opponent. You play White.
@@ -945,7 +948,7 @@ export default function ChessApp() {
       ) : null}
 
       {screen === "join" ? (
-        <section className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)]">
+        <section className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)] md:mx-auto md:w-full md:max-w-xl md:p-7">
           <h2 className="text-lg font-semibold text-foreground">Join a game</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Enter the code your friend sent. You play Black.
