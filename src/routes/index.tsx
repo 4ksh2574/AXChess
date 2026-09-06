@@ -23,7 +23,7 @@ export const Route = createFileRoute("/")({
 
 function BoardSkeleton() {
   return (
-    <div className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col gap-4 px-4 pt-6">
+    <div className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col gap-4 px-4 pt-6 md:max-w-2xl lg:max-w-5xl">
       <div className="h-10 w-40 animate-pulse rounded-2xl bg-muted" />
       <div className="aspect-square w-full animate-pulse rounded-[28px] bg-muted" />
     </div>

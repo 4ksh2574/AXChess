@@ -16,7 +16,7 @@ export default function AppearanceStudio() {
   const [index, setIndex] = useState(0);
 
   return (
-    <main className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col gap-4 overflow-x-hidden px-4 pb-10 pt-6">
+    <main className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col gap-4 overflow-x-hidden px-4 pb-10 pt-6 lg:max-w-5xl lg:gap-6 lg:px-8 lg:pt-8">
       <header className="flex items-center gap-3">
         <Link
           to="/"

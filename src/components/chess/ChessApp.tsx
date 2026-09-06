@@ -1091,8 +1091,8 @@ export default function ChessApp() {
       ) : null}
 
       {undoState === "incoming" ? (
-        <div className="fixed inset-0 z-50 flex items-end bg-foreground/40 p-4">
-          <div className="w-full rounded-[28px] bg-card p-6 text-center">
+        <div className="fixed inset-0 z-50 flex items-end bg-foreground/40 p-4 sm:items-center sm:justify-center">
+          <div className="w-full rounded-[28px] bg-card p-6 text-center sm:max-w-md">
             <h3 className="text-lg font-semibold text-foreground">Undo requested</h3>
             <p className="mt-1 text-sm text-muted-foreground">
               Your opponent wants to take back their last move.
@@ -1116,8 +1116,8 @@ export default function ChessApp() {
       ) : null}
 
       {pendingPromotion ? (
-        <div className="fixed inset-0 z-50 flex items-end bg-foreground/40 p-4">
-          <div className="w-full rounded-[28px] bg-card p-5">
+        <div className="fixed inset-0 z-50 flex items-end bg-foreground/40 p-4 sm:items-center sm:justify-center">
+          <div className="w-full rounded-[28px] bg-card p-5 sm:max-w-md">
             <h3 className="text-base font-semibold text-foreground">Promote pawn</h3>
             <div className="mt-4 grid grid-cols-4 gap-3">
               {[
@@ -1144,8 +1144,8 @@ export default function ChessApp() {
       ) : null}
 
       {result && !resultDismissed ? (
-        <div className="fixed inset-0 z-50 flex items-end bg-foreground/40 p-4">
-          <div className="w-full rounded-[28px] bg-card p-6 text-center">
+        <div className="fixed inset-0 z-50 flex items-end bg-foreground/40 p-4 sm:items-center sm:justify-center">
+          <div className="w-full rounded-[28px] bg-card p-6 text-center sm:max-w-md">
             <h3 className="text-xl font-semibold text-foreground">{result}</h3>
             <div className="mt-5 grid gap-3">
               <button
