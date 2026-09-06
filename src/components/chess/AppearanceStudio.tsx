@@ -16,7 +16,7 @@ export default function AppearanceStudio() {
   const [index, setIndex] = useState(0);
 
   return (
-    <main className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col gap-4 overflow-x-hidden px-4 pb-10 pt-6">
+    <main className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col gap-4 overflow-x-hidden px-4 pb-10 pt-6 lg:max-w-5xl lg:gap-6 lg:px-8 lg:pt-8">
       <header className="flex items-center gap-3">
         <Link
           to="/"
@@ -28,7 +28,8 @@ export default function AppearanceStudio() {
         <h1 className="text-xl font-semibold tracking-tight text-foreground">Board appearance</h1>
       </header>
 
-      <div className="sticky top-2 z-10">
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_420px] lg:items-start lg:gap-8">
+      <div className="sticky top-2 z-10 lg:top-6">
         <div
           className="overflow-hidden rounded-[28px] p-2 shadow-[0_10px_30px_-14px_rgba(0,0,0,0.5)]"
           style={{ backgroundColor: theme.board.light }}
@@ -57,6 +58,8 @@ export default function AppearanceStudio() {
       </div>
 
       <AppearancePanel />
+      </div>
+
 
       <footer className="mt-auto pt-8 text-center text-[11px] font-medium tracking-wide text-muted-foreground">
         made by 4ksh2574

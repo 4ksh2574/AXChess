@@ -663,7 +663,7 @@ export default function ChessApp() {
 
 
   return (
-    <main className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col gap-4 overflow-x-hidden px-4 pb-8 pt-6">
+    <main className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col gap-4 overflow-x-hidden px-4 pb-8 pt-6 md:max-w-2xl lg:max-w-5xl lg:gap-6 lg:px-8 lg:pt-8">
       <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <picture>
@@ -729,7 +729,7 @@ export default function ChessApp() {
       ) : null}
 
       {screen === "home" ? (
-        <section className="flex flex-col gap-4">
+        <section className="flex flex-col gap-4 md:grid md:grid-cols-2 md:items-start lg:gap-6">
           <div className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)]">
             <h2 className="text-lg font-semibold text-foreground">Play a friend</h2>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -785,7 +785,7 @@ export default function ChessApp() {
       ) : null}
 
       {screen === "setup" ? (
-        <section className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)]">
+        <section className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)] md:mx-auto md:w-full md:max-w-xl md:p-7">
           <h2 className="text-lg font-semibold text-foreground">
             {setupMode === "ai" ? "Play vs Computer" : "Pass & Play"}
           </h2>
@@ -912,7 +912,7 @@ export default function ChessApp() {
 
 
       {screen === "create" ? (
-        <section className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)]">
+        <section className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)] md:mx-auto md:w-full md:max-w-xl md:p-7">
           <h2 className="text-lg font-semibold text-foreground">Your game code</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Share this with your opponent. You play White.
@@ -948,7 +948,7 @@ export default function ChessApp() {
       ) : null}
 
       {screen === "join" ? (
-        <section className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)]">
+        <section className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)] md:mx-auto md:w-full md:max-w-xl md:p-7">
           <h2 className="text-lg font-semibold text-foreground">Join a game</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Enter the code your friend sent. You play Black.
@@ -978,18 +978,8 @@ export default function ChessApp() {
       ) : null}
 
       {screen === "game" ? (
-        <section className="flex flex-col gap-3">
-          <PlayerCard
-            name={opponentName}
-            avatarUrl={opponent.avatar}
-            color={opponentColor}
-            isTurn={turn === opponentColor && !result}
-            captured={opponentColor === "white" ? captured.byWhite : captured.byBlack}
-            clock={clocks ? formatClock(clocks[opponentColor]) : undefined}
-            lowTime={!!clocks && clocks[opponentColor] < 30_000}
-          />
-
-          <div className="overflow-hidden rounded-[28px] bg-card p-2 shadow-[0_10px_30px_-14px_rgba(74,68,88,0.55)]">
+        <section className="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start lg:gap-6">
+          <div className="order-2 overflow-hidden rounded-[28px] bg-card p-2 shadow-[0_10px_30px_-14px_rgba(74,68,88,0.55)] lg:order-none lg:col-start-1 lg:row-start-1 lg:w-full lg:max-w-[min(640px,calc(100dvh-180px))] lg:justify-self-center">
             <div className="overflow-hidden rounded-[20px]">
               <Chessboard
                 options={{
@@ -1014,6 +1004,20 @@ export default function ChessApp() {
             </div>
           </div>
 
+          <div className="contents lg:flex lg:flex-col lg:gap-4 lg:col-start-2 lg:row-start-1">
+          <div className="order-1 lg:order-none">
+          <PlayerCard
+            name={opponentName}
+            avatarUrl={opponent.avatar}
+            color={opponentColor}
+            isTurn={turn === opponentColor && !result}
+            captured={opponentColor === "white" ? captured.byWhite : captured.byBlack}
+            clock={clocks ? formatClock(clocks[opponentColor]) : undefined}
+            lowTime={!!clocks && clocks[opponentColor] < 30_000}
+          />
+          </div>
+
+          <div className="order-3 lg:order-none">
           <PlayerCard
             name={isLocal && mode === "pass" ? "Player 1" : myName}
             avatarUrl={mode === "pass" ? null : avatarUrl}
@@ -1024,11 +1028,12 @@ export default function ChessApp() {
             clock={clocks ? formatClock(clocks[myColor]) : undefined}
             lowTime={!!clocks && clocks[myColor] < 30_000}
           />
+          </div>
 
           {mode === "pass" ? (
             <button
               onClick={() => setFlipBoard((v) => !v)}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-[20px] bg-secondary text-sm font-medium text-secondary-foreground"
+              className="order-4 inline-flex h-12 items-center justify-center gap-2 rounded-[20px] bg-secondary text-sm font-medium text-secondary-foreground lg:order-none"
             >
               <RotateCw className="h-4 w-4" />
               {flipBoard ? "Auto-flip board: on" : "Auto-flip board: off"}
@@ -1036,12 +1041,12 @@ export default function ChessApp() {
           ) : null}
 
           {thinking ? (
-            <p className="text-center text-xs font-medium text-muted-foreground">
+            <p className="order-5 text-center text-xs font-medium text-muted-foreground lg:order-none">
               Computer is thinking…
             </p>
           ) : null}
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="order-6 grid grid-cols-3 gap-3 lg:order-none">
             <button
               onClick={requestUndo}
               disabled={
@@ -1076,17 +1081,18 @@ export default function ChessApp() {
           {peer.status === "disconnected" ? (
             <button
               onClick={() => void peer.reconnect()}
-              className="h-14 rounded-[20px] bg-primary text-sm font-medium text-primary-foreground"
+              className="order-7 h-14 rounded-[20px] bg-primary text-sm font-medium text-primary-foreground lg:order-none"
             >
               Reconnect
             </button>
           ) : null}
+          </div>
         </section>
       ) : null}
 
       {undoState === "incoming" ? (
-        <div className="fixed inset-0 z-50 flex items-end bg-foreground/40 p-4">
-          <div className="w-full rounded-[28px] bg-card p-6 text-center">
+        <div className="fixed inset-0 z-50 flex items-end bg-foreground/40 p-4 sm:items-center sm:justify-center">
+          <div className="w-full rounded-[28px] bg-card p-6 text-center sm:max-w-md">
             <h3 className="text-lg font-semibold text-foreground">Undo requested</h3>
             <p className="mt-1 text-sm text-muted-foreground">
               Your opponent wants to take back their last move.
@@ -1110,8 +1116,8 @@ export default function ChessApp() {
       ) : null}
 
       {pendingPromotion ? (
-        <div className="fixed inset-0 z-50 flex items-end bg-foreground/40 p-4">
-          <div className="w-full rounded-[28px] bg-card p-5">
+        <div className="fixed inset-0 z-50 flex items-end bg-foreground/40 p-4 sm:items-center sm:justify-center">
+          <div className="w-full rounded-[28px] bg-card p-5 sm:max-w-md">
             <h3 className="text-base font-semibold text-foreground">Promote pawn</h3>
             <div className="mt-4 grid grid-cols-4 gap-3">
               {[
@@ -1138,8 +1144,8 @@ export default function ChessApp() {
       ) : null}
 
       {result && !resultDismissed ? (
-        <div className="fixed inset-0 z-50 flex items-end bg-foreground/40 p-4">
-          <div className="w-full rounded-[28px] bg-card p-6 text-center">
+        <div className="fixed inset-0 z-50 flex items-end bg-foreground/40 p-4 sm:items-center sm:justify-center">
+          <div className="w-full rounded-[28px] bg-card p-6 text-center sm:max-w-md">
             <h3 className="text-xl font-semibold text-foreground">{result}</h3>
             <div className="mt-5 grid gap-3">
               <button
