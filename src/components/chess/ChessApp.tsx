@@ -663,7 +663,7 @@ export default function ChessApp() {
 
 
   return (
-    <main className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col gap-4 overflow-x-hidden px-4 pb-8 pt-6">
+    <main className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col gap-4 overflow-x-hidden px-4 pb-8 pt-6 md:max-w-2xl lg:max-w-5xl lg:gap-6 lg:px-8 lg:pt-8">
       <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <picture>
@@ -729,7 +729,7 @@ export default function ChessApp() {
       ) : null}
 
       {screen === "home" ? (
-        <section className="flex flex-col gap-4">
+        <section className="flex flex-col gap-4 md:grid md:grid-cols-2 md:items-start lg:gap-6">
           <div className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)]">
             <h2 className="text-lg font-semibold text-foreground">Play a friend</h2>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -785,10 +785,7 @@ export default function ChessApp() {
       ) : null}
 
       {screen === "setup" ? (
-        <section className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)]">
-          <h2 className="text-lg font-semibold text-foreground">
-            {setupMode === "ai" ? "Play vs Computer" : "Pass & Play"}
-          </h2>
+        <section className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)] md:mx-auto md:w-full md:max-w-xl md:p-7">
 
           {setupMode === "ai" ? (
             <>
