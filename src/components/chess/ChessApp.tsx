@@ -978,18 +978,8 @@ export default function ChessApp() {
       ) : null}
 
       {screen === "game" ? (
-        <section className="flex flex-col gap-3">
-          <PlayerCard
-            name={opponentName}
-            avatarUrl={opponent.avatar}
-            color={opponentColor}
-            isTurn={turn === opponentColor && !result}
-            captured={opponentColor === "white" ? captured.byWhite : captured.byBlack}
-            clock={clocks ? formatClock(clocks[opponentColor]) : undefined}
-            lowTime={!!clocks && clocks[opponentColor] < 30_000}
-          />
-
-          <div className="overflow-hidden rounded-[28px] bg-card p-2 shadow-[0_10px_30px_-14px_rgba(74,68,88,0.55)]">
+        <section className="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start lg:gap-6">
+          <div className="order-2 overflow-hidden rounded-[28px] bg-card p-2 shadow-[0_10px_30px_-14px_rgba(74,68,88,0.55)] lg:order-none lg:col-start-1 lg:row-start-1 lg:w-full lg:max-w-[min(640px,calc(100dvh-180px))] lg:justify-self-center">
             <div className="overflow-hidden rounded-[20px]">
               <Chessboard
                 options={{
