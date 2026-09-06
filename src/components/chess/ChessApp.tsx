@@ -1004,6 +1004,20 @@ export default function ChessApp() {
             </div>
           </div>
 
+          <div className="contents lg:flex lg:flex-col lg:gap-4 lg:col-start-2 lg:row-start-1">
+          <div className="order-1 lg:order-none">
+          <PlayerCard
+            name={opponentName}
+            avatarUrl={opponent.avatar}
+            color={opponentColor}
+            isTurn={turn === opponentColor && !result}
+            captured={opponentColor === "white" ? captured.byWhite : captured.byBlack}
+            clock={clocks ? formatClock(clocks[opponentColor]) : undefined}
+            lowTime={!!clocks && clocks[opponentColor] < 30_000}
+          />
+          </div>
+
+          <div className="order-3 lg:order-none">
           <PlayerCard
             name={isLocal && mode === "pass" ? "Player 1" : myName}
             avatarUrl={mode === "pass" ? null : avatarUrl}
