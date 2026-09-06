@@ -58,6 +58,8 @@ export default function AppearanceStudio() {
       </div>
 
       <AppearancePanel />
+      </div>
+
 
       <footer className="mt-auto pt-8 text-center text-[11px] font-medium tracking-wide text-muted-foreground">
         made by 4ksh2574
