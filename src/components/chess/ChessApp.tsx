@@ -1028,11 +1028,12 @@ export default function ChessApp() {
             clock={clocks ? formatClock(clocks[myColor]) : undefined}
             lowTime={!!clocks && clocks[myColor] < 30_000}
           />
+          </div>
 
           {mode === "pass" ? (
             <button
               onClick={() => setFlipBoard((v) => !v)}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-[20px] bg-secondary text-sm font-medium text-secondary-foreground"
+              className="order-4 inline-flex h-12 items-center justify-center gap-2 rounded-[20px] bg-secondary text-sm font-medium text-secondary-foreground lg:order-none"
             >
               <RotateCw className="h-4 w-4" />
               {flipBoard ? "Auto-flip board: on" : "Auto-flip board: off"}
@@ -1040,12 +1041,12 @@ export default function ChessApp() {
           ) : null}
 
           {thinking ? (
-            <p className="text-center text-xs font-medium text-muted-foreground">
+            <p className="order-5 text-center text-xs font-medium text-muted-foreground lg:order-none">
               Computer is thinking…
             </p>
           ) : null}
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="order-6 grid grid-cols-3 gap-3 lg:order-none">
             <button
               onClick={requestUndo}
               disabled={
@@ -1080,11 +1081,12 @@ export default function ChessApp() {
           {peer.status === "disconnected" ? (
             <button
               onClick={() => void peer.reconnect()}
-              className="h-14 rounded-[20px] bg-primary text-sm font-medium text-primary-foreground"
+              className="order-7 h-14 rounded-[20px] bg-primary text-sm font-medium text-primary-foreground lg:order-none"
             >
               Reconnect
             </button>
           ) : null}
+          </div>
         </section>
       ) : null}
 
