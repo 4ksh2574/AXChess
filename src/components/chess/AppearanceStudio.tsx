@@ -28,7 +28,8 @@ export default function AppearanceStudio() {
         <h1 className="text-xl font-semibold tracking-tight text-foreground">Board appearance</h1>
       </header>
 
-      <div className="sticky top-2 z-10">
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_420px] lg:items-start lg:gap-8">
+      <div className="sticky top-2 z-10 lg:top-6">
         <div
           className="overflow-hidden rounded-[28px] p-2 shadow-[0_10px_30px_-14px_rgba(0,0,0,0.5)]"
           style={{ backgroundColor: theme.board.light }}
