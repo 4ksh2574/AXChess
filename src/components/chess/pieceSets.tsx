@@ -280,11 +280,42 @@ const chunky: SetGeometry = {
   },
 };
 
-export const PIECE_SETS: Record<PieceSetId, { label: string; geometry: SetGeometry }> = {
+/* -------- Neo: illustrated raster set (fixed colours) -------- */
+
+const NEO_IMAGES: Record<"w" | "b", Record<PieceKey, string>> = {
+  w: {
+    p: neoWP.url,
+    n: neoWN.url,
+    b: neoWB.url,
+    r: neoWR.url,
+    q: neoWQ.url,
+    k: neoWK.url,
+  },
+  b: {
+    p: neoBP.url,
+    n: neoBN.url,
+    b: neoBB.url,
+    r: neoBR.url,
+    q: neoBQ.url,
+    k: neoBK.url,
+  },
+};
+
+type SetDefinition = {
+  label: string;
+  geometry?: SetGeometry;
+  images?: Record<"w" | "b", Record<PieceKey, string>>;
+  /** Halo / outline weights, tuned per set for readability on both squares. */
+  halo?: number;
+  edge?: number;
+};
+
+export const PIECE_SETS: Record<PieceSetId, SetDefinition> = {
+  neo: { label: "Neo", images: NEO_IMAGES },
   rounded: { label: "Rounded", geometry: rounded },
   classic: { label: "Classic", geometry: classic },
-  geometric: { label: "Geometric", geometry: geometric },
-  chunky: { label: "Chunky", geometry: chunky },
+  geometric: { label: "Geometric", geometry: geometric, halo: 5.6, edge: 2 },
+  chunky: { label: "Chunky", geometry: chunky, halo: 5.2, edge: 2 },
 };
 
 export const PIECE_KEYS: PieceKey[] = ["k", "q", "r", "b", "n", "p"];
