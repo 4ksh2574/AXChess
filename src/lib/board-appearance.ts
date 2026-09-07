@@ -7,7 +7,7 @@
  * set stays perceptually even at any hue.
  */
 
-export type PieceSetId = "rounded" | "classic" | "geometric" | "chunky";
+export type PieceSetId = "neo" | "rounded" | "classic" | "geometric" | "chunky";
 
 export type BackgroundId = "wallpaper" | "ember" | "plain" | "custom";
 
