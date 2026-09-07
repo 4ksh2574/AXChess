@@ -2,6 +2,19 @@ import type { PieceRenderObject } from "react-chessboard";
 import type { CSSProperties, ReactElement } from "react";
 import type { BoardTheme, PieceSetId } from "@/lib/board-appearance";
 
+import neoWP from "@/assets/neo/wp.png.asset.json";
+import neoWN from "@/assets/neo/wn.png.asset.json";
+import neoWB from "@/assets/neo/wb.png.asset.json";
+import neoWR from "@/assets/neo/wr.png.asset.json";
+import neoWQ from "@/assets/neo/wq.png.asset.json";
+import neoWK from "@/assets/neo/wk.png.asset.json";
+import neoBP from "@/assets/neo/bp.png.asset.json";
+import neoBN from "@/assets/neo/bn.png.asset.json";
+import neoBB from "@/assets/neo/bb.png.asset.json";
+import neoBR from "@/assets/neo/br.png.asset.json";
+import neoBQ from "@/assets/neo/bq.png.asset.json";
+import neoBK from "@/assets/neo/bk.png.asset.json";
+
 /**
  * Four colour-free vector piece sets. Geometry is pure path data so every set
  * recolours instantly from the active palette.
