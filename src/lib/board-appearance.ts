@@ -7,7 +7,7 @@
  * set stays perceptually even at any hue.
  */
 
-export type PieceSetId = "rounded" | "classic" | "geometric" | "chunky";
+export type PieceSetId = "neo" | "rounded" | "classic" | "geometric" | "chunky";
 
 export type BackgroundId = "wallpaper" | "ember" | "plain" | "custom";
 
@@ -166,37 +166,73 @@ export function deriveTheme(state: AppearanceState): BoardTheme {
  */
 const forestTheme: BoardTheme = {
   board: {
-    light: "#eeeeee",
-    dark: "#6fa475",
-    border: "#4f7d56",
-    selected: "rgba(247, 214, 92, 0.45)",
-    selectedRing: "rgba(226, 182, 51, 0.75)",
-    lastMove: "rgba(247, 220, 111, 0.5)",
-    check: "rgba(214, 72, 60, 0.5)",
-    dot: "rgba(58, 84, 60, 0.42)",
-    lightNotation: "#5c8a63",
-    darkNotation: "#eeeeee",
+    light: "#f0efe6",
+    dark: "#5f9168",
+    border: "#3f6a48",
+    selected: "rgba(250, 217, 97, 0.42)",
+    selectedRing: "rgba(214, 168, 40, 0.85)",
+    lastMove: "rgba(246, 224, 130, 0.46)",
+    check: "rgba(205, 62, 52, 0.52)",
+    dot: "rgba(32, 62, 38, 0.38)",
+    lightNotation: "#4f7d56",
+    darkNotation: "#f0efe6",
   },
   pieces: {
     w: {
-      body: "#fbeadd",
-      edge: "#2f2a26",
-      halo: "rgba(47, 42, 38, 0.45)",
-      shadow: "rgba(47, 42, 38, 0.35)",
+      body: "#fdf4e9",
+      edge: "#2a2521",
+      halo: "rgba(30, 26, 22, 0.42)",
+      shadow: "rgba(30, 26, 22, 0.34)",
     },
     b: {
-      body: "#8a4535",
-      edge: "#2f1b14",
-      halo: "rgba(255, 250, 245, 0.5)",
-      shadow: "rgba(47, 27, 20, 0.4)",
+      body: "#7a3a2b",
+      edge: "#25140e",
+      halo: "rgba(255, 251, 244, 0.6)",
+      shadow: "rgba(37, 20, 14, 0.42)",
     },
   },
-  accent: "#4f7d56",
-  accentSoft: "rgba(79, 125, 86, 0.16)",
+  accent: "#3f6a48",
+  accentSoft: "rgba(63, 106, 72, 0.16)",
+};
+
+/**
+ * "Sunset" matches the warm wallpaper: apricot and dusty-rose squares with
+ * cream and deep-plum pieces.
+ */
+const sunsetTheme: BoardTheme = {
+  board: {
+    light: "#f7e3d0",
+    dark: "#c47b7a",
+    border: "#a4595f",
+    selected: "rgba(255, 205, 120, 0.45)",
+    selectedRing: "rgba(228, 146, 66, 0.85)",
+    lastMove: "rgba(255, 190, 140, 0.5)",
+    check: "rgba(198, 54, 68, 0.5)",
+    dot: "rgba(96, 40, 55, 0.38)",
+    lightNotation: "#a4595f",
+    darkNotation: "#f7e3d0",
+  },
+  pieces: {
+    w: {
+      body: "#fff6ec",
+      edge: "#3a2230",
+      halo: "rgba(58, 34, 48, 0.42)",
+      shadow: "rgba(58, 34, 48, 0.34)",
+    },
+    b: {
+      body: "#43263c",
+      edge: "#1e0f1c",
+      halo: "rgba(255, 246, 236, 0.62)",
+      shadow: "rgba(30, 15, 28, 0.42)",
+    },
+  },
+  accent: "#b35d63",
+  accentSoft: "rgba(179, 93, 99, 0.16)",
 };
 
 export const FIXED_PALETTES: Record<string, { label: string; theme: BoardTheme }> = {
   forest: { label: "Forest", theme: forestTheme },
+  sunset: { label: "Sunset", theme: sunsetTheme },
 };
 
 /* ------------------------------------------------------------------ */
@@ -280,7 +316,7 @@ export const PRESETS: Preset[] = [
 ];
 
 export const DEFAULT_APPEARANCE: AppearanceState = {
-  pieceSet: "rounded",
+  pieceSet: "neo",
   hue: 300,
   saturation: 46,
   contrast: 46,

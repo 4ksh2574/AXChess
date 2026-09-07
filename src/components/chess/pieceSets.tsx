@@ -2,6 +2,19 @@ import type { PieceRenderObject } from "react-chessboard";
 import type { CSSProperties, ReactElement } from "react";
 import type { BoardTheme, PieceSetId } from "@/lib/board-appearance";
 
+import neoWP from "@/assets/neo/wp.png.asset.json";
+import neoWN from "@/assets/neo/wn.png.asset.json";
+import neoWB from "@/assets/neo/wb.png.asset.json";
+import neoWR from "@/assets/neo/wr.png.asset.json";
+import neoWQ from "@/assets/neo/wq.png.asset.json";
+import neoWK from "@/assets/neo/wk.png.asset.json";
+import neoBP from "@/assets/neo/bp.png.asset.json";
+import neoBN from "@/assets/neo/bn.png.asset.json";
+import neoBB from "@/assets/neo/bb.png.asset.json";
+import neoBR from "@/assets/neo/br.png.asset.json";
+import neoBQ from "@/assets/neo/bq.png.asset.json";
+import neoBK from "@/assets/neo/bk.png.asset.json";
+
 /**
  * Four colour-free vector piece sets. Geometry is pure path data so every set
  * recolours instantly from the active palette.
@@ -267,11 +280,42 @@ const chunky: SetGeometry = {
   },
 };
 
-export const PIECE_SETS: Record<PieceSetId, { label: string; geometry: SetGeometry }> = {
+/* -------- Neo: illustrated raster set (fixed colours) -------- */
+
+const NEO_IMAGES: Record<"w" | "b", Record<PieceKey, string>> = {
+  w: {
+    p: neoWP.url,
+    n: neoWN.url,
+    b: neoWB.url,
+    r: neoWR.url,
+    q: neoWQ.url,
+    k: neoWK.url,
+  },
+  b: {
+    p: neoBP.url,
+    n: neoBN.url,
+    b: neoBB.url,
+    r: neoBR.url,
+    q: neoBQ.url,
+    k: neoBK.url,
+  },
+};
+
+type SetDefinition = {
+  label: string;
+  geometry?: SetGeometry;
+  images?: Record<"w" | "b", Record<PieceKey, string>>;
+  /** Halo / outline weights, tuned per set for readability on both squares. */
+  halo?: number;
+  edge?: number;
+};
+
+export const PIECE_SETS: Record<PieceSetId, SetDefinition> = {
+  neo: { label: "Neo", images: NEO_IMAGES },
   rounded: { label: "Rounded", geometry: rounded },
   classic: { label: "Classic", geometry: classic },
-  geometric: { label: "Geometric", geometry: geometric },
-  chunky: { label: "Chunky", geometry: chunky },
+  geometric: { label: "Geometric", geometry: geometric, halo: 5.6, edge: 2 },
+  chunky: { label: "Chunky", geometry: chunky, halo: 5.2, edge: 2 },
 };
 
 export const PIECE_KEYS: PieceKey[] = ["k", "q", "r", "b", "n", "p"];
@@ -290,8 +334,28 @@ export function PieceSvg({
   theme: BoardTheme;
   style?: CSSProperties | undefined;
 }) {
-  const geo = PIECE_SETS[setId].geometry[piece];
+  const set = PIECE_SETS[setId];
   const tone = theme.pieces[color];
+
+  if (set.images) {
+    return (
+      <img
+        src={set.images[color][piece]}
+        alt=""
+        draggable={false}
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "block",
+          objectFit: "contain",
+          filter: "drop-shadow(0 2px 3px rgba(0,0,0,0.28))",
+          ...style,
+        }}
+      />
+    );
+  }
+
+  const geo = set.geometry![piece];
 
   return (
     <svg
@@ -308,7 +372,7 @@ export function PieceSvg({
       <g
         fill={tone.halo}
         stroke={tone.halo}
-        strokeWidth={4.4}
+        strokeWidth={set.halo ?? 4.4}
         strokeLinejoin="round"
         strokeLinecap="round"
       >
@@ -320,7 +384,7 @@ export function PieceSvg({
       <g
         fill={tone.body}
         stroke={tone.edge}
-        strokeWidth={1.5}
+        strokeWidth={set.edge ?? 1.5}
         strokeLinejoin="round"
         strokeLinecap="round"
       >
