@@ -316,7 +316,7 @@ export const PRESETS: Preset[] = [
 ];
 
 export const DEFAULT_APPEARANCE: AppearanceState = {
-  pieceSet: "rounded",
+  pieceSet: "neo",
   hue: 300,
   saturation: 46,
   contrast: 46,
