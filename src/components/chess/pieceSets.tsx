@@ -372,7 +372,7 @@ export function PieceSvg({
       <g
         fill={tone.halo}
         stroke={tone.halo}
-        strokeWidth={4.4}
+        strokeWidth={set.halo ?? 4.4}
         strokeLinejoin="round"
         strokeLinecap="round"
       >
