@@ -334,8 +334,28 @@ export function PieceSvg({
   theme: BoardTheme;
   style?: CSSProperties | undefined;
 }) {
-  const geo = PIECE_SETS[setId].geometry[piece];
+  const set = PIECE_SETS[setId];
   const tone = theme.pieces[color];
+
+  if (set.images) {
+    return (
+      <img
+        src={set.images[color][piece]}
+        alt=""
+        draggable={false}
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "block",
+          objectFit: "contain",
+          filter: "drop-shadow(0 2px 3px rgba(0,0,0,0.28))",
+          ...style,
+        }}
+      />
+    );
+  }
+
+  const geo = set.geometry![piece];
 
   return (
     <svg
