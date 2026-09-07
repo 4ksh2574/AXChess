@@ -384,7 +384,7 @@ export function PieceSvg({
       <g
         fill={tone.body}
         stroke={tone.edge}
-        strokeWidth={1.5}
+        strokeWidth={set.edge ?? 1.5}
         strokeLinejoin="round"
         strokeLinecap="round"
       >
