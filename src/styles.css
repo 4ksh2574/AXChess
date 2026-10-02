@@ -181,3 +181,50 @@ html.bg-dark-surface {
   --input: oklch(1 0 0 / 16%);
   --primary-foreground: oklch(0.14 0.02 320);
 }
+
+/* ---------- Liquid glass layer ---------- */
+:root {
+  --glass-tint: oklch(1 0 0 / 0.42);
+  --glass-edge: oklch(1 0 0 / 0.65);
+  --glass-shadow: 0 12px 40px -16px oklch(0.25 0.05 300 / 0.35), inset 0 1px 0 oklch(1 0 0 / 0.7), inset 0 -1px 0 oklch(1 0 0 / 0.15);
+  --card: oklch(0.995 0.005 315 / 0.55);
+  --secondary: oklch(0.93 0.03 310 / 0.6);
+  --muted: oklch(0.945 0.014 312 / 0.55);
+}
+html.bg-dark-surface {
+  --glass-tint: oklch(0.3 0.02 320 / 0.35);
+  --glass-edge: oklch(1 0 0 / 0.18);
+  --glass-shadow: 0 12px 40px -16px oklch(0 0 0 / 0.6), inset 0 1px 0 oklch(1 0 0 / 0.18), inset 0 -1px 0 oklch(1 0 0 / 0.05);
+}
+@layer components {
+  .bg-card, .bg-popover, .bg-secondary, .bg-muted {
+    backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid var(--glass-edge);
+    box-shadow: var(--glass-shadow);
+  }
+  .bg-card { background-image: linear-gradient(135deg, var(--glass-tint), transparent 60%); }
+  button, a, [role="button"] {
+    transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1), background-color 200ms ease, box-shadow 200ms ease, opacity 200ms ease;
+  }
+  button:not(:disabled):active, a:active, [role="button"]:active { transform: scale(0.96); }
+  @media (hover: hover) {
+    button:not(:disabled):hover, a:hover { filter: brightness(1.05); }
+  }
+  main > * { animation: glass-rise 520ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+  main > *:nth-child(2) { animation-delay: 60ms; }
+  main > *:nth-child(3) { animation-delay: 120ms; }
+  main > *:nth-child(4) { animation-delay: 180ms; }
+  main > *:nth-child(n+5) { animation-delay: 240ms; }
+  [role="dialog"] { animation: glass-pop 360ms cubic-bezier(0.34, 1.4, 0.64, 1) both; }
+}
+@keyframes glass-rise {
+  from { opacity: 0; transform: translateY(14px) scale(0.985); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+@keyframes glass-pop {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
