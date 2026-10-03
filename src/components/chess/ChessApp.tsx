@@ -635,6 +635,9 @@ export default function ChessApp() {
     }
   }, [flagged]);
 
+  const commitRef = useRef(commitMove);
+  commitRef.current = commitMove;
+
   // Offline engine: reply whenever it is the computer's turn.
   useEffect(() => {
     if (mode !== "ai" || screen !== "game" || result) return;
@@ -646,7 +649,7 @@ export default function ChessApp() {
       void requestEngineMove(gameRef.current.fen(), difficulty).then((move) => {
         if (cancelled) return;
         setThinking(false);
-        if (move) commitMove(move.from as Square, move.to as Square, move.promotion);
+        if (move) commitRef.current(move.from as Square, move.to as Square, move.promotion);
       });
     }, 260);
     return () => {
@@ -654,7 +657,7 @@ export default function ChessApp() {
       setThinking(false);
       window.clearTimeout(timer);
     };
-  }, [fen, mode, screen, result, myColor, difficulty, commitMove]);
+  }, [fen, mode, screen, result, myColor, difficulty]);
 
 
   const statusBadge = {
