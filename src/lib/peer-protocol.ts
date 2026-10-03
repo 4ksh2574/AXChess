@@ -53,7 +53,7 @@ export const ICE_SERVERS: RTCIceServer[] = [
 ];
 
 export type PeerMessage =
-  | { t: "hello"; name: string; avatar?: string | undefined; color: "white" | "black" }
+  | { t: "hello"; name: string; avatar?: string | undefined; color: "white" | "black"; minutes?: number | undefined }
   | {
       t: "move";
       from: string;
@@ -61,6 +61,7 @@ export type PeerMessage =
       promotion?: string | undefined;
       fen: string;
       moveCount: number;
+      clocks?: { white: number; black: number } | undefined;
     }
   | { t: "sync"; fen: string; moveCount: number; history: string[] }
   | { t: "resign"; color: "white" | "black" }

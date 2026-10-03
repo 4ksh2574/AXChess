@@ -60,6 +60,10 @@ export default function ChessApp() {
   const [timeControl, setTimeControl] = useState<TimeControl>(null);
   const [customMinutes, setCustomMinutes] = useState(15);
   const [clocks, setClocks] = useState<{ white: number; black: number } | null>(null);
+  const clocksRef = useRef(clocks);
+  clocksRef.current = clocks;
+  const timeControlRef = useRef(timeControl);
+  timeControlRef.current = timeControl;
   const [flagged, setFlagged] = useState<"white" | "black" | null>(null);
   const [thinking, setThinking] = useState(false);
   const [myColor, setMyColor] = useState<"white" | "black">("white");
@@ -98,6 +102,11 @@ export default function ChessApp() {
       if (msg.t === "hello") {
         sounds.connect();
         setOpponent({ name: msg.name || "", avatar: msg.avatar ?? null });
+        if (typeof msg.minutes === "number" && gameRef.current.history().length === 0) {
+          const tc = msg.minutes > 0 ? { minutes: msg.minutes } : null;
+          setTimeControl(tc);
+          setClocks(tc ? { white: tc.minutes * 60_000, black: tc.minutes * 60_000 } : null);
+        }
         return;
       }
       if (msg.t === "move") {
@@ -120,6 +129,7 @@ export default function ChessApp() {
         if (game.fen().split(" ")[0] !== msg.fen.split(" ")[0]) game.load(msg.fen);
         if (game.isCheck() && !game.isGameOver()) sounds.check();
         if (game.isGameOver()) sounds.end();
+        if (msg.clocks) setClocks(msg.clocks);
         refresh();
         return;
       }
@@ -186,6 +196,7 @@ export default function ChessApp() {
         name: identityRef.current.name || (role === "host" ? "Host" : "Guest"),
         avatar: identityRef.current.avatar ?? undefined,
         color: role === "host" ? "white" : "black",
+        ...(role === "host" ? { minutes: timeControlRef.current?.minutes ?? 0 } : {}),
       });
       peerSendRef.current?.({
         t: "sync",
@@ -330,6 +341,7 @@ export default function ChessApp() {
           ...(promotion ? { promotion } : {}),
           fen: current.fen(),
           moveCount: current.history().length,
+          ...(clocksRef.current ? { clocks: clocksRef.current } : {}),
         });
       }
       return true;
@@ -404,7 +416,7 @@ export default function ChessApp() {
     setLastMove(null);
     setResigned(null);
     setFlagged(null);
-    resetClocks(null);
+    resetClocks(timeControl);
     setScreen("create");
     await peer.host();
   };
@@ -544,7 +556,7 @@ export default function ChessApp() {
     setResigned(null);
     setFlagged(null);
     setResultDismissed(false);
-    resetClocks(timeControl && isLocal ? timeControl : null);
+    resetClocks(timeControl);
     refresh();
     if (!isLocal) peer.send({ t: "rematch" });
   };
@@ -736,7 +748,11 @@ export default function ChessApp() {
               Create a game and share the code, or join with a code you were sent.
             </p>
             <button
-              onClick={startHost}
+              onClick={() => {
+                unlockAudio();
+                setSetupMode("online");
+                setScreen("setup");
+              }}
               className="mt-4 h-14 w-full rounded-[20px] bg-primary text-base font-medium text-primary-foreground active:scale-[0.99]"
             >
               Create Game
@@ -787,7 +803,7 @@ export default function ChessApp() {
       {screen === "setup" ? (
         <section className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)] md:mx-auto md:w-full md:max-w-xl md:p-7">
           <h2 className="text-lg font-semibold text-foreground">
-            {setupMode === "ai" ? "Play vs Computer" : "Pass & Play"}
+            {setupMode === "ai" ? "Play vs Computer" : setupMode === "online" ? "Create online game" : "Pass & Play"}
           </h2>
 
           {setupMode === "ai" ? (
@@ -895,7 +911,7 @@ export default function ChessApp() {
           </div>
 
           <button
-            onClick={startLocal}
+            onClick={setupMode === "online" ? startHost : startLocal}
             className="mt-5 h-14 w-full rounded-[20px] bg-primary text-base font-medium text-primary-foreground active:scale-[0.99]"
           >
             Start game
@@ -915,7 +931,7 @@ export default function ChessApp() {
         <section className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)] md:mx-auto md:w-full md:max-w-xl md:p-7">
           <h2 className="text-lg font-semibold text-foreground">Your game code</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Share this with your opponent. You play White.
+            Share this with your opponent. You play White · {timeControl ? `${timeControl.minutes} min each` : "No clock"}.
           </p>
           <p className="mt-4 select-all rounded-[20px] bg-primary/10 px-4 py-5 text-center text-2xl font-semibold tracking-wide text-primary">
             {peer.code ? displayCode(peer.code) : "Generating…"}
