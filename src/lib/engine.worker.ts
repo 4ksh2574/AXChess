@@ -1,5 +1,5 @@
 /// <reference lib="webworker" />
-import { pickMove, type Request } from "./engine-core";
+import { pickMove, type Request, type Reply } from "./engine-core";
 
 self.onmessage = (event: MessageEvent<Request & { id: number }>) => {
   const { id, ...req } = event.data;
