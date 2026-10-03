@@ -931,7 +931,7 @@ export default function ChessApp() {
         <section className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)] md:mx-auto md:w-full md:max-w-xl md:p-7">
           <h2 className="text-lg font-semibold text-foreground">Your game code</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Share this with your opponent. You play White.
+            Share this with your opponent. You play White · {timeControl ? `${timeControl.minutes} min each` : "No clock"}.
           </p>
           <p className="mt-4 select-all rounded-[20px] bg-primary/10 px-4 py-5 text-center text-2xl font-semibold tracking-wide text-primary">
             {peer.code ? displayCode(peer.code) : "Generating…"}
