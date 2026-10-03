@@ -31,20 +31,47 @@ function getWorker(): Worker | null {
   return worker;
 }
 
+/** Compute on the main thread when the background worker is unavailable. */
+async function fallbackMove(fen: string, depth: number, randomness: number): Promise<EngineMove> {
+  try {
+    const { pickMove } = await import("./engine-core");
+    return pickMove({ fen, depth, randomness });
+  } catch {
+    return null;
+  }
+}
+
 /** Ask the engine for a move. Resolves to null if no legal move exists. */
 export function requestEngineMove(fen: string, difficulty: Difficulty): Promise<EngineMove> {
   const w = getWorker();
   const { depth, randomness } = SETTINGS[difficulty];
-  if (!w) return Promise.resolve(null);
+  if (!w) return fallbackMove(fen, depth, randomness);
   const id = ++seq;
   return new Promise((resolve) => {
-    const onMessage = (event: MessageEvent<{ id: number; move: EngineMove }>) => {
-      if (event.data.id !== id) return;
+    let done = false;
+    const finish = (move: EngineMove | Promise<EngineMove>) => {
+      if (done) return;
+      done = true;
+      window.clearTimeout(timer);
       w.removeEventListener("message", onMessage);
-      resolve(event.data.move);
+      w.removeEventListener("error", onError);
+      resolve(move);
     };
+    const onMessage = (event: MessageEvent<{ id: number; move: EngineMove }>) => {
+      if (event.data?.id === id) finish(event.data.move);
+    };
+    const onError = () => {
+      disposeEngine();
+      finish(fallbackMove(fen, depth, randomness));
+    };
+    const timer = window.setTimeout(onError, 8000);
     w.addEventListener("message", onMessage);
-    w.postMessage({ id, fen, depth, randomness });
+    w.addEventListener("error", onError);
+    try {
+      w.postMessage({ id, fen, depth, randomness });
+    } catch {
+      onError();
+    }
   });
 }
 
