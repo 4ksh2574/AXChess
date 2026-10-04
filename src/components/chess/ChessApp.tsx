@@ -68,6 +68,12 @@ export default function ChessApp() {
   const [thinking, setThinking] = useState(false);
   const [myColor, setMyColor] = useState<"white" | "black">("white");
   const [selected, setSelected] = useState<Square | null>(null);
+  const [premoves, setPremovesState] = useState<Premove[]>([]);
+  const premovesRef = useRef<Premove[]>([]);
+  const setPremoves = useCallback((next: Premove[]) => {
+    premovesRef.current = next;
+    setPremovesState(next);
+  }, []);
   const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null);
   const [pendingPromotion, setPendingPromotion] = useState<{ from: Square; to: Square } | null>(
     null,
@@ -312,9 +318,18 @@ export default function ChessApp() {
         }
       }
     }
+    for (const p of premoves) {
+      for (const sq of [p.from, p.to]) {
+        styles[sq] = {
+          ...styles[sq],
+          backgroundColor: "rgba(214, 84, 96, 0.5)",
+          boxShadow: "inset 0 0 0 3px rgba(214, 84, 96, 0.8)",
+        };
+      }
+    }
     return styles;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fen, selected, lastMove, legalTargets, theme]);
+  }, [fen, selected, lastMove, legalTargets, theme, premoves]);
 
   const commitMove = useCallback(
     (from: Square, to: Square, promotion?: string) => {
@@ -373,11 +388,48 @@ export default function ChessApp() {
     [commitMove, movableColor],
   );
 
+  /** Colour letter the device player may premove with right now (opponent's turn). */
+  const premoveColor = useCallback((): "w" | "b" | null => {
+    if (modeRef.current === "pass" || resultRef.current) return null;
+    const mine = myColorRef.current === "white" ? "w" : "b";
+    return gameRef.current.turn() === mine ? null : mine;
+  }, []);
+
+  const queuePremove = useCallback(
+    (from: string, to: string) => {
+      const pc = premoveColor();
+      if (!pc || from === to) return false;
+      const fen = gameRef.current.fen();
+      const moving = pieceAt(fen, premovesRef.current, from);
+      if (!moving || (moving === moving.toUpperCase() ? "w" : "b") !== pc) return false;
+      const target = pieceAt(fen, premovesRef.current, to);
+      if (target && (target === target.toUpperCase() ? "w" : "b") === pc) return false;
+      setPremoves([...premovesRef.current, { from, to }]);
+      setSelected(null);
+      return true;
+    },
+    [premoveColor, setPremoves],
+  );
+
   const onSquareClick = useCallback(
     ({ square }: { square: string }) => {
       unlockAudio();
       const sq = square as Square;
       const current = gameRef.current;
+      const pc = premoveColor();
+      if (pc) {
+        const virt = pieceAt(current.fen(), premovesRef.current, sq);
+        const mine = !!virt && (virt === virt.toUpperCase() ? "w" : "b") === pc;
+        if (selected) {
+          if (sq === selected) setSelected(null);
+          else if (mine) setSelected(sq);
+          else queuePremove(selected, sq);
+          return;
+        }
+        if (mine) setSelected(sq);
+        else setPremoves([]);
+        return;
+      }
       if (selected) {
         if (sq === selected) {
           setSelected(null);
@@ -393,8 +445,34 @@ export default function ChessApp() {
         setSelected(null);
       }
     },
-    [selected, tryMove, movableColor],
+    [selected, tryMove, movableColor, premoveColor, queuePremove, setPremoves],
   );
+
+  // Play queued premoves as soon as it's our turn; drop the queue if one is illegal.
+  const prevLenRef = useRef(0);
+  useEffect(() => {
+    const len = gameRef.current.history().length;
+    const shrank = len < prevLenRef.current;
+    prevLenRef.current = len;
+    const q = premovesRef.current;
+    if (!q.length) return;
+    if (shrank || resultRef.current || modeRef.current === "pass") {
+      setPremoves([]);
+      return;
+    }
+    if (!movableColor()) return;
+    const [next, ...rest] = q as [Premove, ...Premove[]];
+    const match = gameRef.current
+      .moves({ square: next.from as Square, verbose: true })
+      .find((m) => m.to === next.to);
+    if (!match) {
+      setPremoves([]);
+      return;
+    }
+    setPremoves(rest);
+    commitMove(next.from as Square, next.to as Square, match.promotion ? "q" : undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fen]);
 
 
   const resetClocks = useCallback((tc: TimeControl) => {
@@ -1002,11 +1080,18 @@ export default function ChessApp() {
             <div className="overflow-hidden rounded-[20px]">
               <Chessboard
                 options={{
-                  position: fen,
+                  position: previewFen(fen, premoves),
                   boardOrientation: orientation,
                   pieces,
                   squareStyles,
-                  allowDragging: isMyTurn && !result && !thinking,
+                  allowDragging: !result && ((isMyTurn && !thinking) || mode !== "pass"),
+                  canDragPiece: ({ piece }) => {
+                    const letter = piece.pieceType[0];
+                    const pc = premoveColor();
+                    if (pc) return letter === pc;
+                    const allowed = movableColor();
+                    return !!allowed && letter === allowed[0];
+                  },
                   animationDurationInMs: 180,
                   lightSquareStyle: { backgroundColor: theme.board.light },
                   darkSquareStyle: { backgroundColor: theme.board.dark },
@@ -1015,7 +1100,9 @@ export default function ChessApp() {
                   onSquareClick,
                   onPieceDrop: ({ sourceSquare, targetSquare }) => {
                     unlockAudio();
-                    if (!targetSquare || result || thinking) return false;
+                    if (!targetSquare || result) return false;
+                    if (premoveColor()) return queuePremove(sourceSquare, targetSquare);
+                    if (thinking) return false;
                     return tryMove(sourceSquare as Square, targetSquare as Square);
                   },
                 }}
