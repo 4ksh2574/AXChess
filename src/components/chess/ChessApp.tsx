@@ -1,3 +1,4 @@
+import { previewFen, pieceAt, type Premove } from "@/lib/premoves";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Chess, type Square } from "chess.js";
