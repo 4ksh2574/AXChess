@@ -1,3 +1,4 @@
+import { WatermarkText } from "@/components/chess/Watermark";
 import { previewFen, pieceAt, type Premove } from "@/lib/premoves";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
@@ -1275,7 +1276,7 @@ export default function ChessApp() {
         </div>
       ) : null}
       <footer className="mt-auto pt-8 text-center text-[11px] font-medium tracking-wide text-muted-foreground">
-        made by 4ksh2574
+        <WatermarkText />
       </footer>
     </main>
   );
