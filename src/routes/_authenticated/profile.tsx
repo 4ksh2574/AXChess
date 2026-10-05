@@ -1,3 +1,4 @@
+import { useAppVersion, setAppVersionLocal, OWNER_USERNAMES } from "@/hooks/useAppVersion";
 import { WatermarkText } from "@/components/chess/Watermark";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
@@ -219,5 +220,45 @@ function ProfilePage() {
         <WatermarkText />
       </footer>
     </main>
+  );
+}
+
+function OwnerPanel() {
+  const current = useAppVersion();
+  const [value, setValue] = useState(current);
+  const [msg, setMsg] = useState<string | null>(null);
+  useEffect(() => setValue(current), [current]);
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const v = value.trim();
+    if (!v) return;
+    const { data, error } = await supabase
+      .from("app_settings")
+      .update({ version: v })
+      .eq("id", 1)
+      .select("version");
+    if (error || !data?.length) setMsg("Could not save the version.");
+    else {
+      setAppVersionLocal(v);
+      setMsg("Version updated for everyone");
+    }
+  };
+  return (
+    <form onSubmit={save} className="flex flex-col gap-3 rounded-[28px] bg-card p-5">
+      <p className="text-sm font-semibold text-foreground">Owner settings</p>
+      <label className="text-sm font-medium text-foreground">
+        App version (shown in the watermark)
+        <input
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          maxLength={20}
+          className="mt-2 h-14 w-full rounded-[20px] bg-muted px-4 text-base outline-none ring-primary/40 focus:ring-2"
+        />
+      </label>
+      {msg ? <p className="text-sm text-muted-foreground">{msg}</p> : null}
+      <button type="submit" className="h-14 rounded-[20px] bg-primary text-base font-medium text-primary-foreground">
+        Save version
+      </button>
+    </form>
   );
 }
