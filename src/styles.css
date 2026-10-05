@@ -282,8 +282,10 @@ html.bg-dark-surface {
   animation: splash-out 450ms ease-in 1.75s forwards;
 }
 .splash-logo {
-  width: 132px; height: 132px; border-radius: 9999px;
-  box-shadow: 0 0 0 0 oklch(1 0 0 / 0.35);
+  width: 148px; height: 148px; border-radius: 9999px; object-fit: cover;
+  background: oklch(1 0 0);
+  outline: 3px solid oklch(1 0 0 / 0.9); outline-offset: 4px;
+  box-shadow: 0 0 40px 6px oklch(0.75 0.15 300 / 0.55), 0 0 0 0 oklch(1 0 0 / 0.35);
   animation: splash-logo-in 650ms cubic-bezier(0.34, 1.56, 0.64, 1) both,
              splash-pulse 900ms ease-out 650ms both,
              splash-logo-out 450ms cubic-bezier(0.6, 0, 0.8, 0.2) 1.75s forwards;
@@ -293,7 +295,7 @@ html.bg-dark-surface {
   animation: splash-title-in 500ms ease-out 350ms both;
 }
 @keyframes splash-logo-in { from { opacity: 0; transform: scale(0.4) rotate(-20deg); } to { opacity: 1; transform: none; } }
-@keyframes splash-pulse { from { box-shadow: 0 0 0 0 oklch(1 0 0 / 0.4); } to { box-shadow: 0 0 0 28px oklch(1 0 0 / 0); } }
+@keyframes splash-pulse { from { box-shadow: 0 0 40px 6px oklch(0.75 0.15 300 / 0.55), 0 0 0 0 oklch(1 0 0 / 0.5); } to { box-shadow: 0 0 40px 6px oklch(0.75 0.15 300 / 0.55), 0 0 0 28px oklch(1 0 0 / 0); } }
 @keyframes splash-logo-out { to { transform: scale(6); opacity: 0; } }
 @keyframes splash-title-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @keyframes splash-out { to { opacity: 0; visibility: hidden; } }

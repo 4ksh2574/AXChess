@@ -213,6 +213,8 @@ function ProfilePage() {
         </button>
       </form>
 
+      {profile && OWNER_USERNAMES.includes(profile.username) ? <OwnerPanel /> : null}
+
       <footer className="mt-auto pt-8 text-center text-[11px] font-medium tracking-wide text-muted-foreground">
         <WatermarkText />
       </footer>
