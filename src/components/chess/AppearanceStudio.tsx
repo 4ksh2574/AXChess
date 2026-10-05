@@ -1,3 +1,4 @@
+import { WatermarkText } from "@/components/chess/Watermark";
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, Shuffle } from "lucide-react";
@@ -62,7 +63,7 @@ export default function AppearanceStudio() {
 
 
       <footer className="mt-auto pt-8 text-center text-[11px] font-medium tracking-wide text-muted-foreground">
-        made by 4ksh2574
+        <WatermarkText />
       </footer>
     </main>
   );

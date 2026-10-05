@@ -1,3 +1,4 @@
+import { WatermarkText } from "@/components/chess/Watermark";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
@@ -162,7 +163,7 @@ function AuthPage() {
       </form>
 
       <footer className="mt-auto pt-8 text-center text-[11px] font-medium tracking-wide text-muted-foreground">
-        made by 4ksh2574
+        <WatermarkText />
       </footer>
     </main>
   );
