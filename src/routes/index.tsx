@@ -1,5 +1,6 @@
 import { createFileRoute, ClientOnly } from "@tanstack/react-router";
 import { lazy, Suspense } from "react";
+import { LaunchScreen } from "@/components/chess/LaunchScreen";
 
 const ChessApp = lazy(() => import("@/components/chess/ChessApp"));
 
@@ -32,10 +33,13 @@ function BoardSkeleton() {
 
 function Index() {
   return (
-    <ClientOnly fallback={<BoardSkeleton />}>
-      <Suspense fallback={<BoardSkeleton />}>
-        <ChessApp />
-      </Suspense>
-    </ClientOnly>
+    <>
+      <LaunchScreen />
+      <ClientOnly fallback={<BoardSkeleton />}>
+        <Suspense fallback={<BoardSkeleton />}>
+          <ChessApp />
+        </Suspense>
+      </ClientOnly>
+    </>
   );
 }
