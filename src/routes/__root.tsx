@@ -132,6 +132,33 @@ function RootComponent() {
     registerOfflineSupport();
   }, []);
 
+  // Dynamic liquid glass: the highlight on glass surfaces follows the pointer/finger.
+  useEffect(() => {
+    let frame = 0;
+    let last: PointerEvent | null = null;
+    const apply = () => {
+      frame = 0;
+      const e = last;
+      if (!e || !(e.target instanceof Element)) return;
+      const el = e.target.closest<HTMLElement>(".bg-card, .bg-popover, .bg-secondary, .bg-muted, .bg-primary");
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      el.style.setProperty("--mx", `${e.clientX - r.left}px`);
+      el.style.setProperty("--my", `${e.clientY - r.top}px`);
+    };
+    const onMove = (e: PointerEvent) => {
+      last = e;
+      if (!frame) frame = requestAnimationFrame(apply);
+    };
+    window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("pointerdown", onMove, { passive: true });
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerdown", onMove);
+      cancelAnimationFrame(frame);
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
