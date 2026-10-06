@@ -259,7 +259,7 @@ export const BACKGROUNDS: BackgroundOption[] = [
   },
   {
     id: "wallpaper",
-    label: "Sunset",
+    label: "Classic light",
     url: "/__l5e/assets-v1/57b8788d-ecf7-4b88-8d72-ed38e3b3c637/wallpaper.jpg",
     scrim: "linear-gradient(oklch(0.983 0.008 315 / 0.7), oklch(0.97 0.012 320 / 0.55))",
     dark: false,
