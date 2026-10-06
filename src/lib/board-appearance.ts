@@ -9,7 +9,7 @@
 
 export type PieceSetId = "neo" | "rounded" | "classic" | "geometric" | "chunky";
 
-export type BackgroundId = "wallpaper" | "ember" | "plain" | "custom";
+export type BackgroundId = "midnight" | "wallpaper" | "ember" | "plain" | "custom";
 
 export type AppearanceState = {
   pieceSet: PieceSetId;
@@ -251,6 +251,13 @@ export type BackgroundOption = {
 
 export const BACKGROUNDS: BackgroundOption[] = [
   {
+    id: "midnight",
+    label: "Midnight (default)",
+    url: null,
+    scrim: "radial-gradient(circle at 50% 30%, oklch(0.24 0.04 300), oklch(0.1 0.01 300) 70%)",
+    dark: true,
+  },
+  {
     id: "wallpaper",
     label: "Sunset",
     url: "/__l5e/assets-v1/57b8788d-ecf7-4b88-8d72-ed38e3b3c637/wallpaper.jpg",
@@ -321,10 +328,11 @@ export const DEFAULT_APPEARANCE: AppearanceState = {
   saturation: 46,
   contrast: 46,
   paletteId: "custom",
-  background: "wallpaper",
+  background: "midnight",
 };
 
 const STORAGE_KEY = "axchess-appearance";
+const DARK_DEFAULT_KEY = "axchess-dark-default-v1";
 
 export function loadAppearance(): AppearanceState {
   if (typeof localStorage === "undefined") return DEFAULT_APPEARANCE;
@@ -332,6 +340,11 @@ export function loadAppearance(): AppearanceState {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return DEFAULT_APPEARANCE;
     const parsed = JSON.parse(raw) as Partial<AppearanceState>;
+    // One-time switch of existing players onto the new dark default.
+    if (!localStorage.getItem(DARK_DEFAULT_KEY)) {
+      localStorage.setItem(DARK_DEFAULT_KEY, "1");
+      if (parsed.background !== "custom") parsed.background = "midnight";
+    }
     return {
       pieceSet: (parsed.pieceSet ?? DEFAULT_APPEARANCE.pieceSet) as PieceSetId,
       hue: Number(parsed.hue ?? DEFAULT_APPEARANCE.hue),
