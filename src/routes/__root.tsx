@@ -113,7 +113,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="bg-dark-surface" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
@@ -135,26 +135,42 @@ function RootComponent() {
   // Dynamic liquid glass: the highlight on glass surfaces follows the pointer/finger.
   useEffect(() => {
     let frame = 0;
-    let last: PointerEvent | null = null;
+    let last: { x: number; y: number; target: EventTarget | null } | null = null;
+    const root = document.documentElement;
     const apply = () => {
       frame = 0;
       const e = last;
-      if (!e || !(e.target instanceof Element)) return;
+      if (!e) return;
+      root.style.setProperty("--gx", `${e.x}px`);
+      root.style.setProperty("--gy", `${e.y}px`);
+      if (!(e.target instanceof Element)) return;
       const el = e.target.closest<HTMLElement>(".bg-card, .bg-popover, .bg-secondary, .bg-muted, .bg-primary");
       if (!el) return;
       const r = el.getBoundingClientRect();
-      el.style.setProperty("--mx", `${e.clientX - r.left}px`);
-      el.style.setProperty("--my", `${e.clientY - r.top}px`);
+      el.style.setProperty("--mx", `${e.x - r.left}px`);
+      el.style.setProperty("--my", `${e.y - r.top}px`);
     };
-    const onMove = (e: PointerEvent) => {
-      last = e;
+    const schedule = () => {
       if (!frame) frame = requestAnimationFrame(apply);
     };
-    window.addEventListener("pointermove", onMove, { passive: true });
-    window.addEventListener("pointerdown", onMove, { passive: true });
+    const onPointer = (e: PointerEvent) => {
+      last = { x: e.clientX, y: e.clientY, target: e.target };
+      schedule();
+    };
+    // Touch drags that scroll cancel pointer events, so follow the finger via touchmove too.
+    const onTouch = (e: TouchEvent) => {
+      const t = e.touches[0];
+      if (!t) return;
+      last = { x: t.clientX, y: t.clientY, target: document.elementFromPoint(t.clientX, t.clientY) };
+      schedule();
+    };
+    window.addEventListener("pointermove", onPointer, { passive: true });
+    window.addEventListener("pointerdown", onPointer, { passive: true });
+    window.addEventListener("touchmove", onTouch, { passive: true });
     return () => {
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerdown", onMove);
+      window.removeEventListener("pointermove", onPointer);
+      window.removeEventListener("pointerdown", onPointer);
+      window.removeEventListener("touchmove", onTouch);
       cancelAnimationFrame(frame);
     };
   }, []);

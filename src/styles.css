@@ -153,9 +153,9 @@
     background-image:
       var(
         --app-bg-scrim,
-        linear-gradient(oklch(0.983 0.008 315 / 0.7), oklch(0.97 0.012 320 / 0.55))
+        radial-gradient(circle at 50% 30%, oklch(0.24 0.04 300), oklch(0.1 0.01 300) 70%)
       ),
-      var(--app-bg-image, url("/__l5e/assets-v1/57b8788d-ecf7-4b88-8d72-ed38e3b3c637/wallpaper.jpg"));
+      var(--app-bg-image, none);
 
     background-size: cover;
     background-position: center;
@@ -272,6 +272,22 @@ html.bg-dark-surface {
 @keyframes glass-pop {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: none; }
+}
+
+/* Ambient liquid light that follows the finger/pointer on dark surfaces. */
+html.bg-dark-surface body::before {
+  content: "";
+  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(360px circle at var(--gx, 50%) var(--gy, 30%), color-mix(in oklab, var(--primary) 32%, transparent), transparent 70%),
+    radial-gradient(520px circle at 85% 90%, oklch(0.55 0.12 250 / 0.18), transparent 70%);
+  transition: background-position 300ms ease;
+  animation: liquid-drift 14s ease-in-out infinite alternate;
+}
+html.bg-dark-surface body { isolation: isolate; }
+@keyframes liquid-drift {
+  from { transform: translate3d(-2%, -1%, 0) scale(1); }
+  to { transform: translate3d(2%, 2%, 0) scale(1.06); }
 }
 
 /* ---------- Launch screen ---------- */

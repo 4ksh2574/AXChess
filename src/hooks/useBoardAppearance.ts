@@ -64,7 +64,7 @@ export function setAppearance(patch: Partial<AppearanceState>) {
 export function setCustomBackground(dataUrl: string | null) {
   customBg = dataUrl;
   saveCustomBackground(dataUrl);
-  setAppearance(dataUrl ? { background: "custom" } : { background: "wallpaper" });
+  setAppearance(dataUrl ? { background: "custom" } : { background: "midnight" });
 }
 
 export function getCustomBackground() {
