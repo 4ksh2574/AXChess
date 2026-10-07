@@ -235,7 +235,6 @@ html.bg-dark-surface {
     position: relative;
     isolation: isolate;
     border: 1px solid var(--glass-border);
-    border-radius: max(24px, var(--tw-radius, 0px));
     box-shadow: var(--glass-shadow);
     backdrop-filter: blur(40px) saturate(200%);
     background-image: radial-gradient(600px circle at var(--mouse-x, 30%) var(--mouse-y, -20%), var(--glass-spot), transparent 40%);
