@@ -148,11 +148,6 @@
   body {
     overflow-x: clip;
   }
-  .__unused,
-  body {
-    overflow-x: hidden;
-    overscroll-behavior-y: none;
-  }
 
   body {
     background-color: var(--color-background);
