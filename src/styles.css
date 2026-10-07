@@ -142,10 +142,11 @@
     border-color: var(--color-border);
   }
 
-  html,
-  body {
-    overflow-x: hidden;
+  html {
     overscroll-behavior-y: none;
+  }
+  body {
+    overflow-x: clip;
   }
 
   body {

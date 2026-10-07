@@ -140,6 +140,24 @@ function AuthPage() {
         >
           {mode === "signin" ? "Sign in" : "Create account"}
         </button>
+        {mode === "signin" ? (
+          <button
+            type="button"
+            onClick={async () => {
+              setError(null);
+              setMessage(null);
+              if (!email) return setError("Type your email above first, then tap Forgot password.");
+              const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: `${window.location.origin}/reset-password`,
+              });
+              if (err) setError(err.message);
+              else setMessage("If that email has an account, a reset link is on its way.");
+            }}
+            className="h-10 text-sm font-medium text-primary"
+          >
+            Forgot password?
+          </button>
+        ) : null}
         <button
           type="button"
           onClick={google}

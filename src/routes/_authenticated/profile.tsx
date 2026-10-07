@@ -214,6 +214,8 @@ function ProfilePage() {
         </button>
       </form>
 
+      <ChangePasswordPanel />
+
       {profile && OWNER_USERNAMES.includes(profile.username) ? <OwnerPanel /> : null}
 
       <footer className="mt-auto pt-8 text-center text-[11px] font-medium tracking-wide text-muted-foreground">
@@ -258,6 +260,52 @@ function OwnerPanel() {
       {msg ? <p className="text-sm text-muted-foreground">{msg}</p> : null}
       <button type="submit" className="h-14 rounded-[20px] bg-primary text-base font-medium text-primary-foreground">
         Save version
+      </button>
+    </form>
+  );
+}
+
+function ChangePasswordPanel() {
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [msg, setMsg] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setMsg(null);
+    setErr(null);
+    if (next.length < 6) return setErr("Use at least 6 characters.");
+    setBusy(true);
+    const { error } = await supabase.auth.updateUser({ password: next, current_password: current } as never);
+    setBusy(false);
+    if (error) setErr(error.message);
+    else {
+      setMsg("Password changed");
+      setCurrent("");
+      setNext("");
+    }
+  };
+  const cls =
+    "mt-2 h-14 w-full rounded-[20px] bg-muted px-4 text-base outline-none ring-primary/40 focus:ring-2";
+  return (
+    <form onSubmit={save} className="flex flex-col gap-3 rounded-[28px] bg-card p-5">
+      <p className="text-sm font-semibold text-foreground">Change password</p>
+      <label className="text-sm font-medium text-foreground">
+        Current password
+        <input type="password" autoComplete="current-password" value={current}
+          onChange={(e) => setCurrent(e.target.value)} className={cls} />
+      </label>
+      <label className="text-sm font-medium text-foreground">
+        New password
+        <input type="password" required minLength={6} autoComplete="new-password" value={next}
+          onChange={(e) => setNext(e.target.value)} className={cls} />
+      </label>
+      {err ? <p className="text-sm text-destructive">{err}</p> : null}
+      {msg ? <p className="text-sm text-muted-foreground">{msg}</p> : null}
+      <button type="submit" disabled={busy}
+        className="h-14 rounded-[20px] bg-secondary text-base font-medium text-secondary-foreground disabled:opacity-60">
+        Update password
       </button>
     </form>
   );
