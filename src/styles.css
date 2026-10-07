@@ -182,96 +182,131 @@ html.bg-dark-surface {
   --primary-foreground: oklch(0.14 0.02 320);
 }
 
-/* ---------- Liquid glass layer ---------- */
+/* ---------- Liquid Glass design system ---------- */
 :root {
-  --glass-tint: oklch(1 0 0 / 0.42);
-  --glass-edge: oklch(1 0 0 / 0.65);
-  --glass-shadow: 0 12px 40px -16px oklch(0.25 0.05 300 / 0.35), inset 0 1px 0 oklch(1 0 0 / 0.7), inset 0 -1px 0 oklch(1 0 0 / 0.15);
-  --card: oklch(0.995 0.005 315 / 0.55);
-  --secondary: oklch(0.93 0.03 310 / 0.6);
-  --muted: oklch(0.945 0.014 312 / 0.55);
+  /* Apple spring curves, sampled from the exact spring equations. */
+  --spring-fluid: linear(0, 0.017, 0.062, 0.124, 0.197, 0.275, 0.354, 0.432, 0.505, 0.573, 0.635, 0.691, 0.741, 0.785, 0.823, 0.856, 0.884, 0.907, 0.927, 0.943, 0.957, 0.968, 0.977, 0.984, 0.989, 0.993, 0.997, 0.999, 1.001, 1.002, 1.003, 1.003, 1.003, 1.003, 1.002, 1.002, 1);
+  --spring-fluid-ms: 395ms; /* stiffness 320, damping 28, mass 0.8 */
+  --spring-snappy: linear(0, 0.014, 0.051, 0.102, 0.163, 0.229, 0.296, 0.363, 0.428, 0.49, 0.548, 0.601, 0.65, 0.694, 0.733, 0.769, 0.8, 0.828, 0.853, 0.874, 0.893, 0.909, 0.923, 0.935, 0.945, 0.954, 0.962, 0.968, 0.973, 0.978, 0.982, 0.985, 0.988, 0.99, 0.992, 0.994, 0.996, 0.997, 1);
+  --spring-snappy-ms: 225ms; /* stiffness 500, damping 30, mass 0.5 */
+  --spring-heavy: linear(0, 0.018, 0.066, 0.132, 0.21, 0.293, 0.376, 0.458, 0.534, 0.605, 0.67, 0.727, 0.777, 0.821, 0.858, 0.89, 0.916, 0.938, 0.955, 0.969, 0.98, 0.989, 0.996, 1, 1.004, 1.006, 1.007, 1.008, 1.008, 1.007, 1.006, 1.005, 1.004, 1.003, 1.002, 1);
+  --spring-heavy-ms: 575ms; /* stiffness 220, damping 26, mass 1.1 */
+
+  /* Light mode material */
+  --glass-base: oklch(0.99 0.006 300 / 0.4);
+  --glass-elevated: oklch(0.995 0.006 300 / 0.65);
+  --glass-floating: oklch(0.995 0.006 300 / 0.8);
+  --glass-solid: oklch(0.995 0.006 300 / 0.95);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --glass-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6), 0 8px 32px -4px rgba(30, 20, 60, 0.12);
+  --glass-shadow-low: inset 0 1px 1px rgba(255, 255, 255, 0.5), 0 4px 10px -2px rgba(30, 20, 60, 0.1);
+  --glass-shadow-float: inset 0 1px 1px rgba(255, 255, 255, 0.6), 0 20px 50px rgba(30, 20, 60, 0.2);
+  --glass-spot: rgba(255, 255, 255, 0.15);
+  --card: var(--glass-elevated);
+  --popover: var(--glass-floating);
+  --secondary: var(--glass-base);
+  --muted: oklch(0.97 0.008 300 / 0.5);
+  --foreground: oklch(0.21 0.03 270 / 0.9);
 }
+/* Dark mode material: saturated deep slate, never pure black. */
 html.bg-dark-surface {
-  --glass-tint: oklch(0.3 0.02 320 / 0.35);
-  --glass-edge: oklch(1 0 0 / 0.18);
-  --glass-shadow: 0 12px 40px -16px oklch(0 0 0 / 0.6), inset 0 1px 0 oklch(1 0 0 / 0.18), inset 0 -1px 0 oklch(1 0 0 / 0.05);
-}
-:root {
-  --glass-edge: oklch(1 0 0 / 0.4);
-  --glass-shadow: 0 8px 32px 0 oklch(0 0 0 / 0.12), inset 0 1px 0 0 oklch(1 0 0 / 0.6);
-  --secondary: oklch(1 0 0 / 0.25);
+  --background: #0b0f17;
+  --glass-base: rgba(15, 23, 42, 0.4);
+  --glass-elevated: rgba(15, 23, 42, 0.6);
+  --glass-floating: rgba(15, 23, 42, 0.8);
+  --glass-solid: rgba(15, 23, 42, 0.95);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 12px 40px -4px rgba(2, 6, 18, 0.5);
+  --glass-shadow-low: inset 0 1px 1px rgba(255, 255, 255, 0.12), 0 4px 12px -2px rgba(2, 6, 18, 0.4);
+  --glass-shadow-float: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 20px 50px rgba(2, 6, 18, 0.6);
+  --glass-spot: rgba(255, 255, 255, 0.1);
+  --card: var(--glass-elevated);
+  --popover: var(--glass-floating);
+  --secondary: var(--glass-base);
+  --muted: rgba(30, 41, 59, 0.5);
+  --foreground: rgba(255, 255, 255, 0.95);
+  --card-foreground: rgba(255, 255, 255, 0.95);
+  --popover-foreground: rgba(255, 255, 255, 0.95);
+  --secondary-foreground: rgba(255, 255, 255, 0.95);
 }
 @layer components {
-  /* Heavy blur only on large surfaces; small chips get a cheap translucent fill. */
+  /* Elevated layer: cards and popovers. */
   .bg-card, .bg-popover {
     position: relative;
     isolation: isolate;
-    backdrop-filter: blur(14px) saturate(170%);
-    -webkit-backdrop-filter: blur(14px) saturate(170%);
-    border: 1px solid var(--glass-edge);
-    border-right-color: oklch(1 0 0 / 0.12);
-    border-bottom-color: oklch(1 0 0 / 0.12);
+    border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
-    background-image:
-      radial-gradient(420px circle at var(--mx, 30%) var(--my, -20%), oklch(1 0 0 / 0.32), transparent 45%),
-      linear-gradient(135deg, var(--glass-tint), oklch(0.92 0.005 300 / 0.08) 70%);
+    backdrop-filter: blur(40px) saturate(200%);
+    background-image: radial-gradient(600px circle at var(--mouse-x, 30%) var(--mouse-y, -20%), var(--glass-spot), transparent 40%);
+    transform: translateZ(0);
   }
+  /* Floating control layer. */
+  .bg-popover, [role="dialog"], [role="tooltip"] {
+    box-shadow: var(--glass-shadow-float);
+    backdrop-filter: blur(64px) saturate(200%);
+  }
+  /* Base layer: secondary panels, inputs, chips. */
   .bg-secondary, .bg-muted {
-    border: 1px solid var(--glass-edge);
-    box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.5);
-    background-image:
-      radial-gradient(160px circle at var(--mx, 50%) var(--my, -40%), oklch(1 0 0 / 0.45), transparent 60%),
-      linear-gradient(160deg, oklch(1 0 0 / 0.3), transparent 70%);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow-low);
+    backdrop-filter: blur(12px) saturate(200%);
+    background-image: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, -40%), var(--glass-spot), transparent 40%);
   }
-  header .bg-secondary, header .bg-card {
-    backdrop-filter: blur(10px) saturate(170%);
-    -webkit-backdrop-filter: blur(10px) saturate(170%);
-    border-radius: 9999px;
-  }
+  li.bg-card, li.bg-secondary, li.bg-muted { contain: layout style; }
   button.bg-primary, a.bg-primary {
     position: relative;
     overflow: hidden;
     background-color: color-mix(in oklab, var(--primary) 85%, transparent);
     background-image:
-      radial-gradient(180px circle at var(--mx, 50%) var(--my, -30%), oklch(1 0 0 / 0.42), transparent 60%),
-      linear-gradient(180deg, oklch(1 0 0 / 0.14), transparent);
-    border: 1px solid oklch(1 0 0 / 0.3);
-    box-shadow: inset 0 1px 1px oklch(1 0 0 / 0.5), 0 8px 24px -10px color-mix(in oklab, var(--primary) 70%, transparent);
+      radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, -30%), rgba(255, 255, 255, 0.25), transparent 40%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5), 0 8px 24px -10px color-mix(in oklab, var(--primary) 70%, transparent);
   }
-  /* Slow liquid sheen sweeping across primary buttons (transform-only, GPU cheap). */
   button.bg-primary::after, a.bg-primary::after {
     content: "";
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: linear-gradient(105deg, transparent 35%, oklch(1 0 0 / 0.28) 50%, transparent 65%);
+    background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.28) 50%, transparent 65%);
     transform: translateX(-120%);
     animation: liquid-sheen 5.5s ease-in-out infinite;
   }
+  /* Snappy spring micro-interactions with 3D tilt from cursor delta (--rx/--ry set in JS). */
   button, a, [role="button"] {
-    transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 200ms ease, opacity 200ms ease;
+    transform: perspective(700px) translate3d(0, var(--lift, 0px), 0) scale(var(--press, 1)) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    transition: transform var(--spring-snappy-ms) var(--spring-snappy), box-shadow var(--spring-snappy-ms) var(--spring-snappy), opacity 200ms ease;
+    will-change: transform;
   }
-  button:not(:disabled):active, a:active, [role="button"]:active { transform: scale(0.96); }
   @media (hover: hover) {
-    button.bg-primary:not(:disabled):hover, a.bg-primary:hover,
-    button.bg-secondary:not(:disabled):hover, a.bg-secondary:hover { transform: translateY(-2px); }
+    button:not(:disabled):hover, a:hover, [role="button"]:hover { --lift: -2px; --press: 1.02; }
   }
-  main > * { animation: glass-rise 420ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+  button:not(:disabled):active, a:active, [role="button"]:active { --lift: 0px; --press: 0.96; }
+  /* Fluid spring entrances for content and modals; heavy spring for sheets. */
+  main > * { animation: glass-rise var(--spring-fluid-ms) var(--spring-fluid) both; will-change: transform; }
   main > *:nth-child(2) { animation-delay: 50ms; }
   main > *:nth-child(3) { animation-delay: 100ms; }
   main > *:nth-child(n+4) { animation-delay: 150ms; }
-  [role="dialog"] { animation: glass-pop 300ms cubic-bezier(0.34, 1.4, 0.64, 1) both; }
+  [role="dialog"] { animation: glass-pop var(--spring-fluid-ms) var(--spring-fluid) both; overflow: hidden; }
+  .fixed.inset-0 > .bg-card, .fixed.inset-0 > div > .bg-card { animation: glass-sheet var(--spring-heavy-ms) var(--spring-heavy) both; }
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .bg-card, .bg-popover, .bg-secondary, .bg-muted, [role="dialog"] { background-color: var(--glass-solid) !important; }
 }
 @keyframes liquid-sheen {
   0%, 60% { transform: translateX(-120%); }
   100% { transform: translateX(120%); }
 }
 @keyframes glass-rise {
-  from { opacity: 0; transform: translate3d(0, 12px, 0); }
+  from { opacity: 0; transform: translate3d(0, 14px, 0); }
   to { opacity: 1; transform: none; }
 }
 @keyframes glass-pop {
-  from { opacity: 0; transform: scale(0.95); }
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes glass-sheet {
+  from { opacity: 0; transform: translate3d(0, 40px, 0); }
   to { opacity: 1; transform: none; }
 }
 
@@ -281,7 +316,8 @@ html.bg-dark-surface body::before {
   position: fixed; inset: 0; z-index: -1; pointer-events: none;
   background:
     radial-gradient(360px circle at var(--gx, 50%) var(--gy, 30%), color-mix(in oklab, var(--primary) 32%, transparent), transparent 70%),
-    radial-gradient(520px circle at 85% 90%, oklch(0.55 0.12 250 / 0.18), transparent 70%);
+    radial-gradient(520px circle at 85% 90%, oklch(0.55 0.12 250 / 0.18), transparent 70%),
+    linear-gradient(to top right, rgb(99 102 241 / 0.2), rgb(168 85 247 / 0.2), rgb(236 72 153 / 0.2));
   transition: background-position 300ms ease;
   animation: liquid-drift 14s ease-in-out infinite alternate;
 }
