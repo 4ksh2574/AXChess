@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { registerOfflineSupport } from "../lib/pwa";
+import { LiquidAmbient } from "@/components/ui/LiquidAmbient";
 
 
 function NotFoundComponent() {
@@ -137,7 +138,6 @@ function RootComponent() {
     let frame = 0;
     let last: { x: number; y: number; target: EventTarget | null } | null = null;
     const root = document.documentElement;
-    let tilted: HTMLElement | null = null;
     const apply = () => {
       frame = 0;
       const e = last;
@@ -145,26 +145,11 @@ function RootComponent() {
       root.style.setProperty("--gx", `${e.x}px`);
       root.style.setProperty("--gy", `${e.y}px`);
       if (!(e.target instanceof Element)) return;
-      const el = e.target.closest<HTMLElement>(".bg-card, .bg-popover, .bg-secondary, .bg-muted, .bg-primary");
+      const el = e.target.closest<HTMLElement>(".glass-surface, .glass-control, .bg-card, .bg-popover, .bg-secondary, .bg-muted, .bg-primary");
       if (!el) return;
       const r = el.getBoundingClientRect();
       el.style.setProperty("--mouse-x", `${e.x - r.left}px`);
       el.style.setProperty("--mouse-y", `${e.y - r.top}px`);
-      // 3D tilt from cursor delta on interactive glass (max 6deg).
-      const btn = e.target.closest<HTMLElement>("button, a, [role='button']");
-      if (tilted && tilted !== btn) {
-        tilted.style.removeProperty("--rx");
-        tilted.style.removeProperty("--ry");
-        tilted = null;
-      }
-      if (btn && !btn.closest("[data-board]") && matchMedia("(hover: hover)").matches) {
-        const b = btn.getBoundingClientRect();
-        const dx = ((e.x - b.left) / b.width - 0.5) * 2;
-        const dy = ((e.y - b.top) / b.height - 0.5) * 2;
-        btn.style.setProperty("--rx", `${(-dy * 6).toFixed(2)}deg`);
-        btn.style.setProperty("--ry", `${(dx * 6).toFixed(2)}deg`);
-        tilted = btn;
-      }
     };
     const schedule = () => {
       if (!frame) frame = requestAnimationFrame(apply);
