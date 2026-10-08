@@ -1,3 +1,4 @@
+import { GlassCard } from "@/components/ui/GlassCard";
 type Props = {
   name: string;
   color: "white" | "black";
@@ -30,9 +31,9 @@ export function PlayerCard({
 }: Props) {
 
   return (
-    <div
+    <GlassCard
       className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-[24px] px-4 py-3 transition-colors ${
-        isTurn ? "bg-primary/15 ring-2 ring-primary/40" : "bg-card"
+        isTurn ? "glass-active ring-1 ring-primary/40" : ""
       }`}
     >
       <div
@@ -63,7 +64,7 @@ export function PlayerCard({
       </div>
       {clock ? (
         <span
-          className={`shrink-0 rounded-full px-3 py-1 font-mono text-sm font-semibold tabular-nums ${
+          className={`glass-timer shrink-0 rounded-full px-3 py-1 font-mono text-sm font-semibold tabular-nums ${
             lowTime
               ? "bg-destructive/15 text-destructive"
               : isTurn
@@ -79,6 +80,6 @@ export function PlayerCard({
         </span>
       ) : null}
 
-    </div>
+    </GlassCard>
   );
 }

@@ -1,3 +1,5 @@
+import { GlassCard } from "@/components/ui/GlassCard";
+import { Button } from "@/components/ui/button";
 import { WatermarkText } from "@/components/chess/Watermark";
 import { previewFen, pieceAt, type Premove } from "@/lib/premoves";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -792,13 +794,13 @@ export default function ChessApp() {
         >
           <Palette className="h-5 w-5" />
         </Link>
-        <button
+        <Button variant="ghost"
           onClick={toggleMute}
           aria-label={muted ? "Unmute sounds" : "Mute sounds"}
           className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-secondary text-secondary-foreground active:scale-95"
         >
           {muted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-        </button>
+        </Button>
         </div>
       </header>
 
@@ -825,12 +827,12 @@ export default function ChessApp() {
 
       {screen === "home" ? (
         <section className="flex flex-col gap-4 md:grid md:grid-cols-2 md:items-start lg:gap-6">
-          <div className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)]">
+          <GlassCard className="rounded-[28px] bg-card p-5">
             <h2 className="text-lg font-semibold text-foreground">Play a friend</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Create a game and share the code, or join with a code you were sent.
             </p>
-            <button
+            <Button variant="ghost"
               onClick={() => {
                 unlockAudio();
                 setSetupMode("online");
@@ -839,8 +841,8 @@ export default function ChessApp() {
               className="mt-4 h-14 w-full rounded-[20px] bg-primary text-base font-medium text-primary-foreground active:scale-[0.99]"
             >
               Create Game
-            </button>
-            <button
+            </Button>
+            <Button variant="ghost"
               onClick={() => {
                 unlockAudio();
                 setScreen("join");
@@ -849,15 +851,15 @@ export default function ChessApp() {
               className="mt-3 h-14 w-full rounded-[20px] bg-secondary text-base font-medium text-secondary-foreground active:scale-[0.99]"
             >
               Join Game
-            </button>
-          </div>
+            </Button>
+          </GlassCard>
 
-          <div className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)]">
+          <GlassCard className="rounded-[28px] bg-card p-5">
             <h2 className="text-lg font-semibold text-foreground">Play offline</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               No internet, no account needed — share this phone or take on the computer.
             </p>
-            <button
+            <Button variant="ghost"
               onClick={() => {
                 unlockAudio();
                 setSetupMode("pass");
@@ -867,8 +869,8 @@ export default function ChessApp() {
             >
               <Users className="h-5 w-5" />
               Pass &amp; Play
-            </button>
-            <button
+            </Button>
+            <Button variant="ghost"
               onClick={() => {
                 unlockAudio();
                 setSetupMode("ai");
@@ -878,13 +880,13 @@ export default function ChessApp() {
             >
               <Cpu className="h-5 w-5" />
               Play vs Computer
-            </button>
-          </div>
+            </Button>
+          </GlassCard>
         </section>
       ) : null}
 
       {screen === "setup" ? (
-        <section className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)] md:mx-auto md:w-full md:max-w-xl md:p-7">
+        <GlassCard as="section" className="rounded-[28px] bg-card p-5 md:mx-auto md:w-full md:max-w-xl md:p-7">
           <h2 className="text-lg font-semibold text-foreground">
             {setupMode === "ai" ? "Play vs Computer" : setupMode === "online" ? "Create online game" : "Pass & Play"}
           </h2>
@@ -896,7 +898,7 @@ export default function ChessApp() {
               </p>
               <div className="mt-2 grid gap-2">
                 {DIFFICULTIES.map((d) => (
-                  <button
+                  <Button variant="ghost"
                     key={d.id}
                     onClick={() => setDifficulty(d.id)}
                     className={`flex items-center justify-between rounded-[20px] px-4 py-3 text-left text-sm ${
@@ -907,7 +909,7 @@ export default function ChessApp() {
                   >
                     <span className="font-medium">{d.label}</span>
                     <span className="text-xs opacity-80">{d.blurb}</span>
-                  </button>
+                  </Button>
                 ))}
               </div>
 
@@ -916,7 +918,7 @@ export default function ChessApp() {
               </p>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 {(["white", "black"] as const).map((c) => (
-                  <button
+                  <Button variant="ghost"
                     key={c}
                     onClick={() => setMyColor(c)}
                     className={`h-12 rounded-[20px] text-sm font-medium capitalize ${
@@ -926,7 +928,7 @@ export default function ChessApp() {
                     }`}
                   >
                     {c}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </>
@@ -936,16 +938,16 @@ export default function ChessApp() {
             Time control
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
-            <button
+            <Button variant="ghost"
               onClick={() => setTimeControl(null)}
               className={`h-11 rounded-full px-4 text-sm font-medium ${
                 timeControl === null ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
               }`}
             >
               No clock
-            </button>
+            </Button>
             {TIME_PRESETS.map((p) => (
-              <button
+              <Button variant="ghost"
                 key={p.minutes}
                 onClick={() => setTimeControl({ minutes: p.minutes })}
                 className={`h-11 rounded-full px-4 text-sm font-medium ${
@@ -955,9 +957,9 @@ export default function ChessApp() {
                 }`}
               >
                 {p.label}
-              </button>
+              </Button>
             ))}
-            <button
+            <Button variant="ghost"
               onClick={() => setTimeControl({ minutes: customMinutes })}
               className={`h-11 rounded-full px-4 text-sm font-medium ${
                 timeControl && !TIME_PRESETS.some((p) => p.minutes === timeControl.minutes)
@@ -966,7 +968,7 @@ export default function ChessApp() {
               }`}
             >
               Custom
-            </button>
+            </Button>
           </div>
 
           <div className="mt-4">
@@ -993,25 +995,25 @@ export default function ChessApp() {
             />
           </div>
 
-          <button
+          <Button variant="ghost"
             onClick={setupMode === "online" ? startHost : startLocal}
             className="mt-5 h-14 w-full rounded-[20px] bg-primary text-base font-medium text-primary-foreground active:scale-[0.99]"
           >
             Start game
-          </button>
-          <button
+          </Button>
+          <Button variant="ghost"
             onClick={() => setScreen("home")}
             className="mt-2 inline-flex h-12 w-full items-center justify-center gap-1.5 rounded-[20px] text-sm font-medium text-muted-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
             Back
-          </button>
-        </section>
+          </Button>
+        </GlassCard>
       ) : null}
 
 
       {screen === "create" ? (
-        <section className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)] md:mx-auto md:w-full md:max-w-xl md:p-7">
+        <GlassCard as="section" className="rounded-[28px] bg-card p-5 md:mx-auto md:w-full md:max-w-xl md:p-7">
           <h2 className="text-lg font-semibold text-foreground">Your game code</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Share this with your opponent. You play White · {timeControl ? `${timeControl.minutes} min each` : "No clock"}.
@@ -1020,34 +1022,34 @@ export default function ChessApp() {
             {peer.code ? displayCode(peer.code) : "Generating…"}
           </p>
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <button
+            <Button variant="ghost"
               disabled={!peer.code}
               onClick={() => peer.code && copy(displayCode(peer.code), "code")}
               className="inline-flex h-14 items-center justify-center gap-2 rounded-[20px] bg-primary text-sm font-medium text-primary-foreground disabled:opacity-50"
             >
               {copied === "code" ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               Copy Code
-            </button>
-            <button
+            </Button>
+            <Button variant="ghost"
               disabled={!peer.code}
               onClick={() => peer.code && copy(inviteLink(peer.code), "link")}
               className="inline-flex h-14 items-center justify-center gap-2 rounded-[20px] bg-secondary text-sm font-medium text-secondary-foreground disabled:opacity-50"
             >
               {copied === "link" ? <Check className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
               Copy Link
-            </button>
+            </Button>
           </div>
-          <button
+          <Button variant="ghost"
             onClick={leave}
             className="mt-3 h-12 w-full rounded-[20px] text-sm font-medium text-muted-foreground"
           >
             Cancel
-          </button>
-        </section>
+          </Button>
+        </GlassCard>
       ) : null}
 
       {screen === "join" ? (
-        <section className="rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(74,68,88,0.45)] md:mx-auto md:w-full md:max-w-xl md:p-7">
+        <GlassCard as="section" className="rounded-[28px] bg-card p-5 md:mx-auto md:w-full md:max-w-xl md:p-7">
           <h2 className="text-lg font-semibold text-foreground">Join a game</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Enter the code your friend sent. You play Black.
@@ -1061,24 +1063,24 @@ export default function ChessApp() {
             spellCheck={false}
             className="mt-4 h-14 w-full rounded-[20px] bg-muted px-4 text-base text-foreground outline-none ring-primary/40 placeholder:text-muted-foreground focus:ring-2"
           />
-          <button
+          <Button variant="ghost"
             onClick={startJoin}
             className="mt-3 h-14 w-full rounded-[20px] bg-primary text-base font-medium text-primary-foreground active:scale-[0.99]"
           >
             Connect
-          </button>
-          <button
+          </Button>
+          <Button variant="ghost"
             onClick={leave}
             className="mt-2 h-12 w-full rounded-[20px] text-sm font-medium text-muted-foreground"
           >
             Back
-          </button>
-        </section>
+          </Button>
+        </GlassCard>
       ) : null}
 
       {screen === "game" ? (
         <section className="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start lg:gap-6">
-          <div className="order-2 overflow-hidden rounded-[28px] bg-card p-2 shadow-[0_10px_30px_-14px_rgba(74,68,88,0.55)] lg:order-none lg:col-start-1 lg:row-start-1 lg:w-full lg:max-w-[min(640px,calc(100dvh-180px))] lg:justify-self-center">
+          <GlassCard className="order-2 overflow-hidden rounded-[28px] bg-card p-2 lg:order-none lg:col-start-1 lg:row-start-1 lg:w-full lg:max-w-[min(640px,calc(100dvh-180px))] lg:justify-self-center">
             <div className="overflow-hidden rounded-[20px]">
               <Chessboard
                 options={{
@@ -1110,7 +1112,7 @@ export default function ChessApp() {
                 }}
               />
             </div>
-          </div>
+          </GlassCard>
 
           <div className="contents lg:flex lg:flex-col lg:gap-4 lg:col-start-2 lg:row-start-1">
           <div className="order-1 lg:order-none">
@@ -1139,13 +1141,13 @@ export default function ChessApp() {
           </div>
 
           {mode === "pass" ? (
-            <button
+            <Button variant="ghost"
               onClick={() => setFlipBoard((v) => !v)}
               className="order-4 inline-flex h-12 items-center justify-center gap-2 rounded-[20px] bg-secondary text-sm font-medium text-secondary-foreground lg:order-none"
             >
               <RotateCw className="h-4 w-4" />
               {flipBoard ? "Auto-flip board: on" : "Auto-flip board: off"}
-            </button>
+            </Button>
           ) : null}
 
           {thinking ? (
@@ -1155,7 +1157,7 @@ export default function ChessApp() {
           ) : null}
 
           <div className="order-6 grid grid-cols-3 gap-3 lg:order-none">
-            <button
+            <Button variant="ghost"
               onClick={requestUndo}
               disabled={
                 !!result ||
@@ -1168,31 +1170,31 @@ export default function ChessApp() {
             >
               <Undo2 className="h-4 w-4" />
               {undoState === "sent" ? "Sent…" : "Undo"}
-            </button>
-            <button
+            </Button>
+            <Button variant="ghost"
               onClick={resign}
               disabled={!!result}
               className="h-13 rounded-[20px] bg-secondary py-3.5 text-sm font-medium text-secondary-foreground disabled:opacity-50"
             >
               Resign
-            </button>
-            <button
+            </Button>
+            <Button variant="ghost"
               onClick={leave}
               className="inline-flex items-center justify-center gap-1.5 rounded-[20px] bg-muted py-3.5 text-sm font-medium text-muted-foreground"
             >
               <LogOut className="h-4 w-4" />
               Leave
-            </button>
+            </Button>
           </div>
 
 
           {peer.status === "disconnected" ? (
-            <button
+            <Button variant="ghost"
               onClick={() => void peer.reconnect()}
               className="order-7 h-14 rounded-[20px] bg-primary text-sm font-medium text-primary-foreground lg:order-none"
             >
               Reconnect
-            </button>
+            </Button>
           ) : null}
           </div>
         </section>
@@ -1200,32 +1202,32 @@ export default function ChessApp() {
 
       {undoState === "incoming" ? (
         <div className="fixed inset-0 z-50 flex items-end bg-foreground/40 p-4 sm:items-center sm:justify-center">
-          <div className="w-full rounded-[28px] bg-card p-6 text-center sm:max-w-md">
+          <GlassCard depth="floating" className="w-full rounded-[28px] bg-card p-6 text-center sm:max-w-md">
             <h3 className="text-lg font-semibold text-foreground">Undo requested</h3>
             <p className="mt-1 text-sm text-muted-foreground">
               Your opponent wants to take back their last move.
             </p>
             <div className="mt-5 grid grid-cols-2 gap-3">
-              <button
+              <Button variant="ghost"
                 onClick={declineUndo}
                 className="h-13 rounded-[20px] bg-secondary py-3.5 text-sm font-medium text-secondary-foreground"
               >
                 Decline
-              </button>
-              <button
+              </Button>
+              <Button variant="ghost"
                 onClick={acceptUndo}
                 className="h-13 rounded-[20px] bg-primary py-3.5 text-sm font-medium text-primary-foreground"
               >
                 Accept
-              </button>
+              </Button>
             </div>
-          </div>
+          </GlassCard>
         </div>
       ) : null}
 
       {pendingPromotion ? (
         <div className="fixed inset-0 z-50 flex items-end bg-foreground/40 p-4 sm:items-center sm:justify-center">
-          <div className="w-full rounded-[28px] bg-card p-5 sm:max-w-md">
+          <GlassCard depth="floating" className="w-full rounded-[28px] bg-card p-5 sm:max-w-md">
             <h3 className="text-base font-semibold text-foreground">Promote pawn</h3>
             <div className="mt-4 grid grid-cols-4 gap-3">
               {[
@@ -1234,7 +1236,7 @@ export default function ChessApp() {
                 { p: "b", glyph: "♝", label: "Bishop" },
                 { p: "n", glyph: "♞", label: "Knight" },
               ].map((opt) => (
-                <button
+                <Button variant="ghost"
                   key={opt.p}
                   aria-label={opt.label}
                   onClick={() => {
@@ -1244,35 +1246,35 @@ export default function ChessApp() {
                   className="grid h-16 place-items-center rounded-[20px] bg-primary/10 text-3xl text-primary active:scale-95"
                 >
                   {opt.glyph}
-                </button>
+                </Button>
               ))}
             </div>
-          </div>
+          </GlassCard>
         </div>
       ) : null}
 
       {result && !resultDismissed ? (
         <div className="fixed inset-0 z-50 flex items-end bg-foreground/40 p-4 sm:items-center sm:justify-center">
-          <div className="w-full rounded-[28px] bg-card p-6 text-center sm:max-w-md">
+          <GlassCard depth="floating" className="w-full rounded-[28px] bg-card p-6 text-center sm:max-w-md">
             <h3 className="text-xl font-semibold text-foreground">{result}</h3>
             <div className="mt-5 grid gap-3">
-              <button
+              <Button variant="ghost"
                 onClick={rematch}
                 className="h-14 rounded-[20px] bg-primary text-base font-medium text-primary-foreground"
               >
                 Rematch
-              </button>
-              <button
+              </Button>
+              <Button variant="ghost"
                 onClick={() => setResultDismissed(true)}
                 className="h-12 rounded-[20px] bg-secondary text-sm font-medium text-secondary-foreground"
               >
                 View board
-              </button>
-              <button onClick={leave} className="h-12 text-sm font-medium text-muted-foreground">
+              </Button>
+              <Button variant="ghost" onClick={leave} className="h-12 text-sm font-medium text-muted-foreground">
                 Leave game
-              </button>
+              </Button>
             </div>
-          </div>
+          </GlassCard>
         </div>
       ) : null}
       <footer className="mt-auto pt-8 text-center text-[11px] font-medium tracking-wide text-muted-foreground">

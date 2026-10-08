@@ -1,3 +1,5 @@
+import { GlassCard } from "@/components/ui/GlassCard";
+import { Button } from "@/components/ui/button";
 import { useAppVersion, setAppVersionLocal, OWNER_USERNAMES } from "@/hooks/useAppVersion";
 import { WatermarkText } from "@/components/chess/Watermark";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
@@ -129,17 +131,17 @@ function ProfilePage() {
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <h1 className="text-xl font-semibold tracking-tight text-foreground">Your profile</h1>
-        <button
+        <Button variant="ghost"
           onClick={signOut}
           aria-label="Sign out"
           className="ml-auto grid h-11 w-11 place-items-center rounded-2xl bg-secondary text-secondary-foreground"
         >
           <LogOut className="h-5 w-5" />
-        </button>
+        </Button>
       </header>
 
-      <section className="flex items-center gap-4 rounded-[28px] bg-card p-5">
-        <button
+      <GlassCard as="section" className="flex items-center gap-4 rounded-[28px] bg-card p-5">
+        <Button variant="ghost"
           onClick={() => fileRef.current?.click()}
           className="relative grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-full bg-muted text-2xl font-semibold text-foreground"
           aria-label="Change profile picture"
@@ -152,7 +154,7 @@ function ProfilePage() {
           <span className="absolute bottom-0 grid h-6 w-full place-items-center bg-primary/85 text-primary-foreground">
             <Camera className="h-3.5 w-3.5" />
           </span>
-        </button>
+        </Button>
         <div className="min-w-0">
           <p className="truncate text-lg font-semibold text-foreground">
             {displayName || username}
@@ -169,9 +171,9 @@ function ProfilePage() {
             if (file) void uploadAvatar(file);
           }}
         />
-      </section>
+      </GlassCard>
 
-      <form onSubmit={save} className="flex flex-col gap-3 rounded-[28px] bg-card p-5">
+      <GlassCard as="form" onSubmit={save} className="flex flex-col gap-3 rounded-[28px] bg-card p-5">
         <label className="text-sm font-medium text-foreground">
           Display name
           <input
@@ -205,14 +207,14 @@ function ProfilePage() {
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
         {status ? <p className="text-sm text-muted-foreground">{status}</p> : null}
 
-        <button
+        <Button variant="ghost"
           type="submit"
           disabled={busy}
           className="h-14 rounded-[20px] bg-primary text-base font-medium text-primary-foreground disabled:opacity-60"
         >
           Save profile
-        </button>
-      </form>
+        </Button>
+      </GlassCard>
 
       <ChangePasswordPanel />
 
@@ -246,7 +248,7 @@ function OwnerPanel() {
     }
   };
   return (
-    <form onSubmit={save} className="flex flex-col gap-3 rounded-[28px] bg-card p-5">
+    <GlassCard as="form" onSubmit={save} className="flex flex-col gap-3 rounded-[28px] bg-card p-5">
       <p className="text-sm font-semibold text-foreground">Owner settings</p>
       <label className="text-sm font-medium text-foreground">
         App version (shown in the watermark)
@@ -258,10 +260,10 @@ function OwnerPanel() {
         />
       </label>
       {msg ? <p className="text-sm text-muted-foreground">{msg}</p> : null}
-      <button type="submit" className="h-14 rounded-[20px] bg-primary text-base font-medium text-primary-foreground">
+      <Button variant="ghost" type="submit" className="h-14 rounded-[20px] bg-primary text-base font-medium text-primary-foreground">
         Save version
-      </button>
-    </form>
+      </Button>
+    </GlassCard>
   );
 }
 
@@ -289,7 +291,7 @@ function ChangePasswordPanel() {
   const cls =
     "mt-2 h-14 w-full rounded-[20px] bg-muted px-4 text-base outline-none ring-primary/40 focus:ring-2";
   return (
-    <form onSubmit={save} className="flex flex-col gap-3 rounded-[28px] bg-card p-5">
+    <GlassCard as="form" onSubmit={save} className="flex flex-col gap-3 rounded-[28px] bg-card p-5">
       <p className="text-sm font-semibold text-foreground">Change password</p>
       <label className="text-sm font-medium text-foreground">
         Current password
@@ -303,10 +305,10 @@ function ChangePasswordPanel() {
       </label>
       {err ? <p className="text-sm text-destructive">{err}</p> : null}
       {msg ? <p className="text-sm text-muted-foreground">{msg}</p> : null}
-      <button type="submit" disabled={busy}
+      <Button variant="ghost" type="submit" disabled={busy}
         className="h-14 rounded-[20px] bg-secondary text-base font-medium text-secondary-foreground disabled:opacity-60">
         Update password
-      </button>
-    </form>
+      </Button>
+    </GlassCard>
   );
 }
