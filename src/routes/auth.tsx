@@ -1,3 +1,5 @@
+import { GlassCard } from "@/components/ui/GlassCard";
+import { Button } from "@/components/ui/button";
 import { WatermarkText } from "@/components/chess/Watermark";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
@@ -97,9 +99,9 @@ function AuthPage() {
         </h1>
       </header>
 
-      <form
+      <GlassCard as="form"
         onSubmit={submit}
-        className="flex flex-col gap-3 rounded-[28px] bg-card p-5 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.35)]"
+        className="flex flex-col gap-3 rounded-[28px] bg-card p-5"
       >
         {mode === "signup" ? (
           <input
@@ -133,15 +135,15 @@ function AuthPage() {
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
         {message ? <p className="text-sm text-muted-foreground">{message}</p> : null}
 
-        <button
+        <Button variant="ghost"
           type="submit"
           disabled={busy}
           className="h-14 rounded-[20px] bg-primary text-base font-medium text-primary-foreground disabled:opacity-60"
         >
           {mode === "signin" ? "Sign in" : "Create account"}
-        </button>
+        </Button>
         {mode === "signin" ? (
-          <button
+          <Button variant="ghost"
             type="button"
             onClick={async () => {
               setError(null);
@@ -156,16 +158,16 @@ function AuthPage() {
             className="h-10 text-sm font-medium text-primary"
           >
             Forgot password?
-          </button>
+          </Button>
         ) : null}
-        <button
+        <Button variant="ghost"
           type="button"
           onClick={google}
           className="h-14 rounded-[20px] bg-secondary text-base font-medium text-secondary-foreground"
         >
           Continue with Google
-        </button>
-        <button
+        </Button>
+        <Button variant="ghost"
           type="button"
           onClick={() => {
             setMode(mode === "signin" ? "signup" : "signin");
@@ -177,8 +179,8 @@ function AuthPage() {
           {mode === "signin"
             ? "New here? Create an account"
             : "Already have an account? Sign in"}
-        </button>
-      </form>
+        </Button>
+      </GlassCard>
 
       <footer className="mt-auto pt-8 text-center text-[11px] font-medium tracking-wide text-muted-foreground">
         <WatermarkText />

@@ -1,3 +1,5 @@
+import { GlassCard } from "@/components/ui/GlassCard";
+import { Button } from "@/components/ui/button";
 import { useRef } from "react";
 import { PIECE_SETS, PieceSvg } from "./pieceSets";
 import {
@@ -75,10 +77,10 @@ export function AppearancePanel() {
           {(Object.keys(PIECE_SETS) as PieceSetId[]).map((id) => {
             const active = appearance.pieceSet === id;
             return (
-              <button
+              <Button variant="ghost"
                 key={id}
                 onClick={() => setAppearance({ pieceSet: id })}
-                className={`rounded-[22px] p-3 text-left transition ${
+                className={`glass-surface rounded-[22px] h-auto min-w-0 flex-col items-stretch p-3 text-left transition ${
                   active ? "bg-primary/15 ring-2 ring-primary" : "bg-card"
                 }`}
               >
@@ -106,7 +108,7 @@ export function AppearancePanel() {
                 <span className="mt-2 block text-sm font-medium text-foreground">
                   {PIECE_SETS[id].label}
                 </span>
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -116,7 +118,7 @@ export function AppearancePanel() {
         <h3 className="text-sm font-semibold text-foreground">Palette</h3>
         <div className="mt-3 flex flex-wrap gap-2">
           {Object.entries(FIXED_PALETTES).map(([id, palette]) => (
-            <button
+            <Button variant="ghost"
               key={id}
               onClick={() => setAppearance({ paletteId: id })}
               className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-xs font-medium ${
@@ -136,10 +138,10 @@ export function AppearancePanel() {
                 />
               </span>
               {palette.label}
-            </button>
+            </Button>
           ))}
           {PRESETS.map((preset) => (
-            <button
+            <Button variant="ghost"
               key={preset.id}
               onClick={() =>
                 setAppearance({
@@ -160,7 +162,7 @@ export function AppearancePanel() {
                 style={{ backgroundColor: `oklch(0.6 ${0.02 + (preset.saturation / 100) * 0.11} ${preset.hue})` }}
               />
               {preset.label}
-            </button>
+            </Button>
           ))}
         </div>
       </section>
@@ -172,7 +174,7 @@ export function AppearancePanel() {
             const preview = bg.id === "custom" ? customBackground : bg.url;
             const active = appearance.background === bg.id;
             return (
-              <button
+              <Button variant="ghost"
                 key={bg.id}
                 onClick={() => {
                   if (bg.id === "custom" && !customBackground) {
@@ -181,7 +183,7 @@ export function AppearancePanel() {
                   }
                   setAppearance({ background: bg.id });
                 }}
-                className={`overflow-hidden rounded-[22px] p-1 text-left transition ${
+                className={`glass-surface overflow-hidden rounded-[22px] h-auto min-w-0 flex-col items-stretch p-1 text-left transition ${
                   active ? "bg-primary/15 ring-2 ring-primary" : "bg-card"
                 }`}
               >
@@ -192,7 +194,7 @@ export function AppearancePanel() {
                 <span className="mt-2 block px-2 pb-1 text-sm font-medium text-foreground">
                   {bg.label}
                 </span>
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -213,25 +215,25 @@ export function AppearancePanel() {
           }}
         />
         <div className="mt-3 flex gap-2">
-          <button
+          <Button variant="ghost"
             onClick={() => fileRef.current?.click()}
             className="h-11 flex-1 rounded-full bg-secondary text-sm font-medium text-secondary-foreground"
           >
             {customBackground ? "Change my photo" : "Use a photo"}
-          </button>
+          </Button>
           {customBackground ? (
-            <button
+            <Button variant="ghost"
               onClick={() => setCustomBackground(null)}
               className="h-11 rounded-full px-4 text-sm font-medium text-muted-foreground"
             >
               Remove
-            </button>
+            </Button>
           ) : null}
         </div>
       </section>
 
 
-      <section className="flex flex-col gap-4 rounded-[22px] bg-card p-4">
+      <GlassCard as="section" className="flex flex-col gap-4 rounded-[22px] bg-card p-4">
         <Slider
           label="Hue"
           value={appearance.hue}
@@ -256,7 +258,7 @@ export function AppearancePanel() {
           gradient={`linear-gradient(to right, ${theme.board.light}, ${theme.board.dark})`}
           onChange={(contrast) => setAppearance({ contrast, paletteId: "custom" })}
         />
-      </section>
+      </GlassCard>
 
       <section>
         <h3 className="text-sm font-semibold text-foreground">Readability check</h3>

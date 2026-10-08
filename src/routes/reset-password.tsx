@@ -1,3 +1,5 @@
+import { GlassCard } from "@/components/ui/GlassCard";
+import { Button } from "@/components/ui/button";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,17 +46,17 @@ function ResetPasswordPage() {
   return (
     <main className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col gap-4 px-4 pb-10 pt-6">
       <h1 className="text-xl font-semibold tracking-tight text-foreground">Set a new password</h1>
-      <form onSubmit={submit} className="flex flex-col gap-3 rounded-[28px] bg-card p-5">
+      <GlassCard as="form" onSubmit={submit} className="flex flex-col gap-3 rounded-[28px] bg-card p-5">
         <input type="password" required minLength={6} placeholder="New password" autoComplete="new-password"
           value={password} onChange={(e) => setPassword(e.target.value)} className={inputCls} />
         <input type="password" required minLength={6} placeholder="Repeat new password" autoComplete="new-password"
           value={confirm} onChange={(e) => setConfirm(e.target.value)} className={inputCls} />
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
-        <button type="submit" disabled={busy}
+        <Button variant="ghost" type="submit" disabled={busy}
           className="h-14 rounded-[20px] bg-primary text-base font-medium text-primary-foreground disabled:opacity-60">
           Save new password
-        </button>
-      </form>
+        </Button>
+      </GlassCard>
     </main>
   );
 }
