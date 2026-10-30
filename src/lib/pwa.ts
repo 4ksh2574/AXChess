@@ -6,7 +6,7 @@
  * switch that unregisters it again.
  */
 
-const SW_URL = "/sw.js";
+const SW_URL = `${import.meta.env.BASE_URL}sw.js`;
 
 function isPreviewHost(hostname: string) {
   return (
@@ -45,7 +45,7 @@ export function registerOfflineSupport() {
     return;
   }
 
-  void navigator.serviceWorker.register(SW_URL, { scope: "/" }).catch(() => {
+  void navigator.serviceWorker.register(SW_URL, { scope: import.meta.env.BASE_URL }).catch(() => {
     /* offline support unavailable */
   });
 }
