@@ -7,10 +7,12 @@ on:
       - "src/**"
       - "public/**"
       - "package.json"
-      - "package-lock.json"
+      - "bun.lock"
       - "vite.config.pages.ts"
       - ".github/workflows/pages.yml"
       - "docs/**"
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -28,15 +30,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
       - name: Install dependencies
-        run: npm ci
+        run: bun install --frozen-lockfile
       - name: Build static AXChess app
-        run: npm run build:pages
+        run: bun run build:pages
       - name: Prepare GitHub Pages fallback
         run: |
           test -f dist/client/_shell.html
@@ -45,13 +44,16 @@ jobs:
           cp docs/index.html dist/client/project/index.html
           touch dist/client/.nojekyll
       - name: Configure Pages
+        if: github.event_name != 'pull_request'
         uses: actions/configure-pages@v5
       - name: Upload site
+        if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist/client
 
   deploy:
+    if: github.event_name != 'pull_request'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
