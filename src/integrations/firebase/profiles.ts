@@ -1,4 +1,3 @@
-import type { FirebaseRuntime } from "./client";
 import { getFirebaseRuntime } from "./client";
 
 export type FirebaseUserLike = {
