@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import type { Session, User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import { getFirebaseRuntime } from "@/integrations/firebase/client";
+import {
+  ensureUserProfile,
+  readUserProfile,
+  type FirebaseUserLike,
+} from "@/integrations/firebase/profiles";
 
 export type Profile = {
   id: string;
@@ -10,56 +14,104 @@ export type Profile = {
   bio: string | null;
 };
 
-/** Resolve an avatar storage path to a temporary readable URL. */
-export async function resolveAvatar(path: string | null | undefined): Promise<string | null> {
-  if (!path) return null;
-  if (path.startsWith("http")) return path;
-  const { data } = await supabase.storage.from("avatars").createSignedUrl(path, 60 * 60);
-  return data?.signedUrl ?? null;
+export function resolveAvatar(path: string | null | undefined): string | null {
+  if (!path || !/^https:\/\//i.test(path)) return null;
+  return path;
 }
 
 export function useAuth() {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<FirebaseUserLike | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const loadProfile = useCallback(async (id: string) => {
-    const { data } = await supabase
-      .from("profiles")
-      .select("id, username, display_name, avatar_url, bio")
-      .eq("id", id)
-      .maybeSingle();
-    setProfile((data as Profile) ?? null);
-    setAvatarUrl(await resolveAvatar(data?.avatar_url));
+  const loadProfile = useCallback(async (activeUser: FirebaseUserLike) => {
+    await ensureUserProfile(activeUser);
+    const data = await readUserProfile(activeUser);
+    const nextProfile = data
+      ? {
+          id: activeUser.uid,
+          username: data.username,
+          display_name: data.displayName,
+          avatar_url: data.avatarPath,
+          bio: data.bio,
+        }
+      : null;
+    setProfile(nextProfile);
+    setAvatarUrl(resolveAvatar(data?.avatarPath));
   }, []);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, next) => {
-      setSession(next);
-      setUser(next?.user ?? null);
-      if (next?.user) void loadProfile(next.user.id);
-      else {
-        setProfile(null);
-        setAvatarUrl(null);
-      }
-      setLoading(false);
-    });
+    let active = true;
+    let unsubscribe: (() => void) | undefined;
 
-    void supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
-      if (data.session?.user) void loadProfile(data.session.user.id);
-      setLoading(false);
-    });
+    void getFirebaseRuntime()
+      .then(({ auth, authSdk }) => {
+        if (!active) return;
+        unsubscribe = authSdk.onAuthStateChanged(auth, async (nextUser: FirebaseUserLike | null) => {
+          if (!active) return;
+          setUser(nextUser);
+          if (!nextUser) {
+            setProfile(null);
+            setAvatarUrl(null);
+            setLoading(false);
+            return;
+          }
+          setLoading(true);
+          try {
+            let preferredUsername: string | undefined;
+            try {
+              preferredUsername = sessionStorage.getItem("axchess-pending-signup-username") || undefined;
+            } catch {
+              preferredUsername = undefined;
+            }
+            await ensureUserProfile(nextUser, preferredUsername);
+            const data = await readUserProfile(nextUser);
+            if (preferredUsername) {
+              try {
+                sessionStorage.removeItem("axchess-pending-signup-username");
+              } catch {
+                // Ignore unavailable session storage.
+              }
+            }
+            if (!active) return;
+            setProfile(
+              data
+                ? {
+                    id: nextUser.uid,
+                    username: data.username,
+                    display_name: data.displayName,
+                    avatar_url: data.avatarPath,
+                    bio: data.bio,
+                  }
+                : null,
+            );
+            setAvatarUrl(resolveAvatar(data?.avatarPath));
+          } catch (error) {
+            console.error("[AXChess] Could not load player profile", error);
+            if (active) {
+              setProfile(null);
+              setAvatarUrl(null);
+            }
+          } finally {
+            if (active) setLoading(false);
+          }
+        });
+      })
+      .catch((error) => {
+        console.error("[AXChess] Firebase initialization failed", error);
+        if (active) setLoading(false);
+      });
 
-    return () => sub.subscription.unsubscribe();
-  }, [loadProfile]);
+    return () => {
+      active = false;
+      unsubscribe?.();
+    };
+  }, []);
 
   const refreshProfile = useCallback(async () => {
-    if (user) await loadProfile(user.id);
+    if (user) await loadProfile(user);
   }, [user, loadProfile]);
 
-  return { session, user, profile, avatarUrl, loading, refreshProfile };
+  return { user, profile, avatarUrl, loading, refreshProfile };
 }

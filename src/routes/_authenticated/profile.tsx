@@ -1,16 +1,16 @@
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/button";
-import { useAppVersion, setAppVersionLocal, OWNER_USERNAMES } from "@/hooks/useAppVersion";
 import { WatermarkText } from "@/components/chess/Watermark";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Camera, LogOut } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth, resolveAvatar } from "@/hooks/useAuth";
+import { useEffect, useState } from "react";
+import { ArrowLeft, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { getFirebaseRuntime, firebaseErrorMessage } from "@/integrations/firebase/client";
+import { saveUserProfile } from "@/integrations/firebase/profiles";
 
 const title = "Your Player Profile — AXChess";
 const description =
-  "Edit your AXChess player profile: display name, username, avatar picture and a short bio your opponents can see.";
+  "Edit your AXChess player profile: display name, username, picture URL and a short bio.";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
@@ -29,12 +29,10 @@ export const Route = createFileRoute("/_authenticated/profile")({
 function ProfilePage() {
   const navigate = useNavigate();
   const { user, profile, avatarUrl, loading, refreshProfile } = useAuth();
-  const fileRef = useRef<HTMLInputElement>(null);
-
   const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
-  const [preview, setPreview] = useState<string | null>(null);
+  const [pictureUrl, setPictureUrl] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -44,72 +42,40 @@ function ProfilePage() {
     setDisplayName(profile.display_name);
     setUsername(profile.username);
     setBio(profile.bio ?? "");
+    setPictureUrl(profile.avatar_url ?? "");
   }, [profile]);
 
-  useEffect(() => setPreview(avatarUrl), [avatarUrl]);
-
-  const save = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const save = async (event: React.FormEvent) => {
+    event.preventDefault();
     if (!user) return;
     setBusy(true);
     setError(null);
     setStatus(null);
-    const clean = username.trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
-    if (clean.length < 3) {
-      setError("Username needs at least 3 letters, numbers or underscores.");
-      setBusy(false);
-      return;
-    }
-    const { error: err } = await supabase
-      .from("profiles")
-      .update({
-        username: clean,
-        display_name: displayName.trim() || clean,
-        bio: bio.trim() || null,
-      })
-      .eq("id", user.id);
-    if (err) {
-      setError(
-        err.code === "23505" ? "That username is already taken." : "Could not save changes.",
-      );
-    } else {
-      setUsername(clean);
+    try {
+      await saveUserProfile(user, {
+        username,
+        displayName,
+        bio,
+        avatarPath: pictureUrl.trim() || null,
+      });
+      await refreshProfile();
       setStatus("Profile saved");
-      await refreshProfile();
-    }
-    setBusy(false);
-  };
-
-  const uploadAvatar = async (file: File) => {
-    if (!user) return;
-    setBusy(true);
-    setError(null);
-    const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-    const path = `${user.id}/avatar-${Date.now()}.${ext}`;
-    const { error: upErr } = await supabase.storage
-      .from("avatars")
-      .upload(path, file, { upsert: true, contentType: file.type });
-    if (upErr) {
-      setError("Upload failed. Try a smaller image.");
+    } catch (saveError) {
+      const message = firebaseErrorMessage(saveError);
+      setError(message.includes("already taken") ? message : message || "Could not save changes.");
+    } finally {
       setBusy(false);
-      return;
     }
-    const { error: dbErr } = await supabase
-      .from("profiles")
-      .update({ avatar_url: path })
-      .eq("id", user.id);
-    if (dbErr) setError("Could not save the new picture.");
-    else {
-      setPreview(await resolveAvatar(path));
-      setStatus("Picture updated");
-      await refreshProfile();
-    }
-    setBusy(false);
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    await navigate({ to: "/", replace: true });
+    try {
+      const { auth, authSdk } = await getFirebaseRuntime();
+      await authSdk.signOut(auth);
+      await navigate({ to: "/", replace: true });
+    } catch (signOutError) {
+      setError(firebaseErrorMessage(signOutError));
+    }
   };
 
   if (loading) {
@@ -131,95 +97,66 @@ function ProfilePage() {
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <h1 className="text-xl font-semibold tracking-tight text-foreground">Your profile</h1>
-        <Button variant="ghost"
-          onClick={signOut}
-          aria-label="Sign out"
-          className="ml-auto grid h-11 w-11 place-items-center rounded-2xl bg-secondary text-secondary-foreground"
-        >
+        <Button variant="ghost" onClick={signOut} aria-label="Sign out"
+          className="ml-auto grid h-11 w-11 place-items-center rounded-2xl bg-secondary text-secondary-foreground">
           <LogOut className="h-5 w-5" />
         </Button>
       </header>
 
       <GlassCard as="section" className="flex items-center gap-4 rounded-[28px] bg-card p-5">
-        <Button variant="ghost"
-          onClick={() => fileRef.current?.click()}
-          className="relative grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-full bg-muted text-2xl font-semibold text-foreground"
-          aria-label="Change profile picture"
-        >
-          {preview ? (
-            <img src={preview} alt="Your avatar" className="h-full w-full object-cover" />
+        <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-full bg-muted text-2xl font-semibold text-foreground">
+          {avatarUrl ? (
+            <img src={avatarUrl} alt="Your avatar" className="h-full w-full object-cover" />
           ) : (
             (displayName || username || "?").slice(0, 1).toUpperCase()
           )}
-          <span className="absolute bottom-0 grid h-6 w-full place-items-center bg-primary/85 text-primary-foreground">
-            <Camera className="h-3.5 w-3.5" />
-          </span>
-        </Button>
-        <div className="min-w-0">
-          <p className="truncate text-lg font-semibold text-foreground">
-            {displayName || username}
-          </p>
-          <p className="truncate text-sm text-muted-foreground">@{username}</p>
         </div>
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) void uploadAvatar(file);
-          }}
-        />
+        <div className="min-w-0">
+          <p className="truncate text-lg font-semibold text-foreground">{displayName || username}</p>
+          <p className="truncate text-sm text-muted-foreground">@{username}</p>
+          <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
+        </div>
       </GlassCard>
 
       <GlassCard as="form" onSubmit={save} className="flex flex-col gap-3 rounded-[28px] bg-card p-5">
         <label className="text-sm font-medium text-foreground">
           Display name
-          <input
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
+          <input value={displayName} onChange={(event) => setDisplayName(event.target.value)}
             maxLength={40}
-            className="mt-2 h-14 w-full rounded-[20px] bg-muted px-4 text-base outline-none ring-primary/40 focus:ring-2"
-          />
+            className="mt-2 h-14 w-full rounded-[20px] bg-muted px-4 text-base outline-none ring-primary/40 focus:ring-2" />
         </label>
         <label className="text-sm font-medium text-foreground">
           Username
-          <input
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            autoCapitalize="none"
-            maxLength={24}
-            className="mt-2 h-14 w-full rounded-[20px] bg-muted px-4 text-base outline-none ring-primary/40 focus:ring-2"
-          />
+          <input value={username} onChange={(event) => setUsername(event.target.value)}
+            autoCapitalize="none" maxLength={24}
+            className="mt-2 h-14 w-full rounded-[20px] bg-muted px-4 text-base outline-none ring-primary/40 focus:ring-2" />
         </label>
         <label className="text-sm font-medium text-foreground">
           Bio
-          <textarea
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            rows={3}
-            maxLength={160}
-            className="mt-2 w-full rounded-[20px] bg-muted px-4 py-3 text-base outline-none ring-primary/40 focus:ring-2"
-          />
+          <textarea value={bio} onChange={(event) => setBio(event.target.value)}
+            rows={3} maxLength={160}
+            className="mt-2 w-full rounded-[20px] bg-muted px-4 py-3 text-base outline-none ring-primary/40 focus:ring-2" />
+        </label>
+        <label className="text-sm font-medium text-foreground">
+          Profile picture URL
+          <input type="url" inputMode="url" placeholder="https://example.com/avatar.jpg"
+            value={pictureUrl} onChange={(event) => setPictureUrl(event.target.value)}
+            className="mt-2 h-14 w-full rounded-[20px] bg-muted px-4 text-base outline-none ring-primary/40 focus:ring-2" />
+          <span className="mt-1 block text-xs text-muted-foreground">
+            Use an HTTPS image link. File uploads are paused because Firebase Storage requires billing.
+          </span>
         </label>
 
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
         {status ? <p className="text-sm text-muted-foreground">{status}</p> : null}
 
-        <Button variant="ghost"
-          type="submit"
-          disabled={busy}
-          className="h-14 rounded-[20px] bg-primary text-base font-medium text-primary-foreground disabled:opacity-60"
-        >
-          Save profile
+        <Button variant="ghost" type="submit" disabled={busy}
+          className="h-14 rounded-[20px] bg-primary text-base font-medium text-primary-foreground disabled:opacity-60">
+          {busy ? "Saving…" : "Save profile"}
         </Button>
       </GlassCard>
 
-      <ChangePasswordPanel />
-
-      {profile && OWNER_USERNAMES.includes(profile.username) ? <OwnerPanel /> : null}
-
+      <ChangePasswordPanel user={user} />
       <footer className="mt-auto pt-8 text-center text-[11px] font-medium tracking-wide text-muted-foreground">
         <WatermarkText />
       </footer>
@@ -227,87 +164,74 @@ function ProfilePage() {
   );
 }
 
-function OwnerPanel() {
-  const current = useAppVersion();
-  const [value, setValue] = useState(current);
-  const [msg, setMsg] = useState<string | null>(null);
-  useEffect(() => setValue(current), [current]);
-  const save = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const v = value.trim();
-    if (!v) return;
-    const { data, error } = await supabase
-      .from("app_settings")
-      .update({ version: v })
-      .eq("id", 1)
-      .select("version");
-    if (error || !data?.length) setMsg("Could not save the version.");
-    else {
-      setAppVersionLocal(v);
-      setMsg("Version updated for everyone");
-    }
-  };
-  return (
-    <GlassCard as="form" onSubmit={save} className="flex flex-col gap-3 rounded-[28px] bg-card p-5">
-      <p className="text-sm font-semibold text-foreground">Owner settings</p>
-      <label className="text-sm font-medium text-foreground">
-        App version (shown in the watermark)
-        <input
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          maxLength={20}
-          className="mt-2 h-14 w-full rounded-[20px] bg-muted px-4 text-base outline-none ring-primary/40 focus:ring-2"
-        />
-      </label>
-      {msg ? <p className="text-sm text-muted-foreground">{msg}</p> : null}
-      <Button variant="ghost" type="submit" className="h-14 rounded-[20px] bg-primary text-base font-medium text-primary-foreground">
-        Save version
-      </Button>
-    </GlassCard>
-  );
-}
-
-function ChangePasswordPanel() {
+function ChangePasswordPanel({ user }: {
+  user: { email?: string | null; providerData?: Array<{ providerId: string }> } | null;
+}) {
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
-  const [msg, setMsg] = useState<string | null>(null);
-  const [err, setErr] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const save = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setMsg(null);
-    setErr(null);
-    if (next.length < 6) return setErr("Use at least 6 characters.");
+  const hasPasswordProvider = !!user?.providerData?.some((provider) => provider.providerId === "password");
+
+  const save = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setMessage(null);
+    setError(null);
+    if (next.length < 6) return setError("Use at least 6 characters.");
     setBusy(true);
-    const { error } = await supabase.auth.updateUser({ password: next, current_password: current } as never);
-    setBusy(false);
-    if (error) setErr(error.message);
-    else {
-      setMsg("Password changed");
+    try {
+      const { auth, authSdk } = await getFirebaseRuntime();
+      const activeUser = auth.currentUser;
+      if (!activeUser?.email) throw new Error("Your signed-in account does not have an email address.");
+      if (hasPasswordProvider) {
+        const credential = authSdk.EmailAuthProvider.credential(activeUser.email, current);
+        await authSdk.reauthenticateWithCredential(activeUser, credential);
+        await authSdk.updatePassword(activeUser, next);
+        setMessage("Password changed");
+      } else {
+        const credential = authSdk.EmailAuthProvider.credential(activeUser.email, next);
+        await authSdk.linkWithCredential(activeUser, credential);
+        setMessage("Email/password sign-in added to your Google account.");
+      }
       setCurrent("");
       setNext("");
+    } catch (changeError) {
+      setError(firebaseErrorMessage(changeError));
+    } finally {
+      setBusy(false);
     }
   };
-  const cls =
+
+  const inputClass =
     "mt-2 h-14 w-full rounded-[20px] bg-muted px-4 text-base outline-none ring-primary/40 focus:ring-2";
+
   return (
     <GlassCard as="form" onSubmit={save} className="flex flex-col gap-3 rounded-[28px] bg-card p-5">
-      <p className="text-sm font-semibold text-foreground">Change password</p>
+      <p className="text-sm font-semibold text-foreground">
+        {hasPasswordProvider ? "Change password" : "Add email/password sign-in"}
+      </p>
+      {!hasPasswordProvider ? (
+        <p className="text-xs text-muted-foreground">
+          Add a password to your Google account so you can use either sign-in method.
+        </p>
+      ) : (
+        <label className="text-sm font-medium text-foreground">
+          Current password
+          <input type="password" autoComplete="current-password" value={current}
+            onChange={(event) => setCurrent(event.target.value)} className={inputClass} />
+        </label>
+      )}
       <label className="text-sm font-medium text-foreground">
-        Current password
-        <input type="password" autoComplete="current-password" value={current}
-          onChange={(e) => setCurrent(e.target.value)} className={cls} />
-      </label>
-      <label className="text-sm font-medium text-foreground">
-        New password
+        {hasPasswordProvider ? "New password" : "Create password"}
         <input type="password" required minLength={6} autoComplete="new-password" value={next}
-          onChange={(e) => setNext(e.target.value)} className={cls} />
+          onChange={(event) => setNext(event.target.value)} className={inputClass} />
       </label>
-      {err ? <p className="text-sm text-destructive">{err}</p> : null}
-      {msg ? <p className="text-sm text-muted-foreground">{msg}</p> : null}
+      {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      {message ? <p className="text-sm text-muted-foreground">{message}</p> : null}
       <Button variant="ghost" type="submit" disabled={busy}
         className="h-14 rounded-[20px] bg-secondary text-base font-medium text-secondary-foreground disabled:opacity-60">
-        Update password
+        {busy ? "Updating…" : hasPasswordProvider ? "Update password" : "Add password"}
       </Button>
     </GlassCard>
   );
