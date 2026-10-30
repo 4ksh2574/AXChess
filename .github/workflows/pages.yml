@@ -51,6 +51,14 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist/client
+      - name: Validate standalone Capacitor build
+        run: |
+          bun run build:mobile
+          test -f dist/client/_shell.html
+          if grep -R "https://axchess.lovable.app" dist/client; then
+            echo "Standalone build unexpectedly references Lovable hosting."
+            exit 1
+          fi
 
   deploy:
     if: github.event_name != 'pull_request'
