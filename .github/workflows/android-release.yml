@@ -7,10 +7,15 @@ on:
       - "AXChess"
   workflow_dispatch:
     inputs:
-      release_tag:
-        description: "Existing release tag to build and attach the APK to"
+      source_ref:
+        description: "Git branch or tag to build from"
         required: true
-        default: "AXChess"
+        default: "main"
+        type: string
+      release_tag:
+        description: "New or existing GitHub Release tag for this APK"
+        required: true
+        default: "v1.1.0"
         type: string
 
 permissions:
@@ -20,10 +25,10 @@ jobs:
   build-apk:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout release source
+      - name: Checkout app source
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.release_tag || github.ref }}
+          ref: ${{ inputs.source_ref || github.ref }}
 
       - name: Resolve release tag
         id: meta
@@ -35,6 +40,25 @@ jobs:
             TAG="${GITHUB_REF_NAME}"
           fi
           echo "release_tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install app dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build standalone web assets
+        run: bun run build:mobile
+
+      - name: Prepare bundled Capacitor site
+        run: |
+          test -f dist/client/_shell.html
+          rm -rf android-web
+          mkdir -p android-web
+          cp -a dist/client/. android-web/
+          cp android-web/_shell.html android-web/index.html
+          touch android-web/.nojekyll
+          test -f android-web/index.html
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -53,13 +77,20 @@ jobs:
           packages: platform-tools platforms;android-35 build-tools;35.0.0
 
       - name: Install Capacitor tooling
-        run: npm install --no-save --legacy-peer-deps @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7
+        run: npm install --no-save --legacy-peer-deps --package-lock=false @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7
 
       - name: Generate Android project
         run: npx cap add android
 
-      - name: Sync Capacitor project
+      - name: Sync bundled site into Android project
         run: npx cap sync android
+
+      - name: Verify APK does not reference Lovable hosting
+        run: |
+          if grep -R "axchess.lovable.app" android-web capacitor.config.json; then
+            echo "Unexpected remote Lovable URL found in standalone app assets."
+            exit 1
+          fi
 
       - name: Build installable APK
         working-directory: android
@@ -81,6 +112,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.meta.outputs.release_tag }}
+          target_commitish: ${{ inputs.source_ref || github.sha }}
           files: AXChess-${{ steps.meta.outputs.release_tag }}-debug.apk
           fail_on_unmatched_files: true
           overwrite_files: true
