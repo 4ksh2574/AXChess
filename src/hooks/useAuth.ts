@@ -59,8 +59,21 @@ export function useAuth() {
           }
           setLoading(true);
           try {
-            await ensureUserProfile(nextUser);
+            let preferredUsername: string | undefined;
+            try {
+              preferredUsername = sessionStorage.getItem("axchess-pending-signup-username") || undefined;
+            } catch {
+              preferredUsername = undefined;
+            }
+            await ensureUserProfile(nextUser, preferredUsername);
             const data = await readUserProfile(nextUser);
+            if (preferredUsername) {
+              try {
+                sessionStorage.removeItem("axchess-pending-signup-username");
+              } catch {
+                // Ignore unavailable session storage.
+              }
+            }
             if (!active) return;
             setProfile(
               data
