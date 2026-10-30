@@ -11,6 +11,7 @@ import {
 import { ensureUserProfile } from "@/integrations/firebase/profiles";
 
 const PENDING_GOOGLE_KEY = "axchess-pending-google-credential";
+const PENDING_SIGNUP_USERNAME_KEY = "axchess-pending-signup-username";
 const title = "Sign In or Create an Account — AXChess";
 const description =
   "Create your AXChess player account to pick a username and keep your profile across games.";
@@ -120,6 +121,11 @@ function AuthPage() {
     try {
       const { auth, authSdk } = await getFirebaseRuntime();
       if (mode === "signup") {
+        try {
+          sessionStorage.setItem(PENDING_SIGNUP_USERNAME_KEY, username.trim());
+        } catch {
+          // The profile can still be created with a generated username.
+        }
         const result = await authSdk.createUserWithEmailAndPassword(auth, email.trim(), password);
         await ensureUserProfile(result.user, username.trim());
         await navigate({ to: "/profile", replace: true });
