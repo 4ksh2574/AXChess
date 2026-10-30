@@ -49,6 +49,8 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools platforms;android-35 build-tools;35.0.0
 
       - name: Install Capacitor tooling
         run: npm install --no-save --legacy-peer-deps @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7
