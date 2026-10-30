@@ -1,9 +1,8 @@
 /**
  * Guarded service-worker registration.
  *
- * The worker only ever registers in the published production app — never in
- * dev, never inside the Lovable preview iframe — and `?sw=off` acts as a kill
- * switch that unregisters it again.
+ * The worker runs only on the published web app. Capacitor's local WebView
+ * origin is deliberately excluded; the APK already bundles its app assets.
  */
 
 const SW_URL = `${import.meta.env.BASE_URL}sw.js`;
@@ -26,19 +25,25 @@ async function unregisterApp() {
   const registrations = await navigator.serviceWorker.getRegistrations();
   await Promise.allSettled(
     registrations
-      .filter((r) => (r.active?.scriptURL ?? r.installing?.scriptURL ?? "").endsWith(SW_URL))
-      .map((r) => r.unregister()),
+      .filter((registration) =>
+        (registration.active?.scriptURL ?? registration.installing?.scriptURL ?? "").endsWith(SW_URL),
+      )
+      .map((registration) => registration.unregister()),
   );
 }
 
 export function registerOfflineSupport() {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
 
+  const isWebOrigin =
+    window.location.protocol === "https:" || window.location.protocol === "http:";
+  if (!isWebOrigin) return;
+
   const refused =
     !import.meta.env.PROD ||
     window.self !== window.top ||
     isPreviewHost(window.location.hostname) ||
-    new URLSearchParams(window.location.search).has("sw") ;
+    new URLSearchParams(window.location.search).has("sw");
 
   if (refused) {
     void unregisterApp();
