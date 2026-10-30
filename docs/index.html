@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101014"><meta name="description" content="AXChess — a clean, mobile-first way to play chess with friends.">
+<title>AXChess — Make your next move</title>
+<style>
+:root{color-scheme:dark;--bg:#101014;--ink:#f6f3fa;--muted:#aaa7b5;--accent:#c7b7ff;--line:rgba(255,255,255,.1)}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% 10%,#44345c66,transparent 38%),radial-gradient(ellipse at 8% 55%,#31564a30,transparent 35%),var(--bg);color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif}
+.wrap{width:min(1080px,calc(100% - 40px));margin:auto}a{color:inherit;text-decoration:none}
+header{height:76px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+.brand{font-weight:750;letter-spacing:-.04em;display:flex;align-items:center;gap:10px}.mark{width:36px;height:36px;border-radius:12px;border:1px solid #c7b7ff66;display:grid;place-items:center;color:var(--accent);font-size:22px;background:#c7b7ff18}
+nav{display:flex;gap:24px;color:var(--muted);font-size:13px}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:44px;align-items:center;padding:92px 0 78px;min-height:560px}
+.tag{display:inline-flex;align-items:center;gap:9px;border:1px solid var(--line);background:#ffffff08;border-radius:99px;padding:7px 12px;color:#d9cff5;font-size:11px;letter-spacing:.13em;text-transform:uppercase}
+.dot{width:7px;height:7px;border-radius:50%;background:#9dd9b6;box-shadow:0 0 12px #9dd9b6}
+h1{font-size:clamp(48px,7vw,82px);line-height:.98;letter-spacing:-.075em;margin:25px 0 20px}h1 span{color:var(--accent)}
+.lead{color:var(--muted);font-size:17px;max-width:510px;margin:0 0 28px}
+.actions{display:flex;gap:12px;flex-wrap:wrap}.btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 19px;border-radius:14px;font-weight:650;font-size:14px;transition:transform .2s}.btn:hover{transform:translateY(-2px)}.primary{background:var(--accent);color:#17131f}.secondary{border:1px solid var(--line);background:#ffffff09}
+.preview{display:grid;place-items:center;min-height:350px;position:relative}.halo{position:absolute;width:min(380px,95%);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#b29beb2c,#b29beb09 48%,transparent 70%)}
+.board-card{position:relative;width:min(330px,100%);padding:23px;border:1px solid #ffffff20;border-radius:28px;background:linear-gradient(145deg,#ffffff19,#ffffff05);box-shadow:0 35px 90px #0009;transform:rotate(3deg)}
+.board-head,.board-foot{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.board{display:grid;grid-template-columns:repeat(8,1fr);aspect-ratio:1;margin:20px 0 16px;border-radius:12px;overflow:hidden;border:1px solid #ffffff22;background:#ddd3c2}
+.sq{display:grid;place-items:center;font-size:clamp(17px,3vw,27px);line-height:1;color:#25232b}.sq:nth-child(16n+1),.sq:nth-child(16n+3),.sq:nth-child(16n+5),.sq:nth-child(16n+7),.sq:nth-child(16n+10),.sq:nth-child(16n+12),.sq:nth-child(16n+14),.sq:nth-child(16n+16){background:#7b887e}.sq:nth-child(16n+2),.sq:nth-child(16n+4),.sq:nth-child(16n+6),.sq:nth-child(16n+8),.sq:nth-child(16n+9),.sq:nth-child(16n+11),.sq:nth-child(16n+13),.sq:nth-child(16n+15){background:#e2d8c7}
+.section{padding:28px 0 75px}.kicker{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}h2{font-size:clamp(28px,4vw,40px);letter-spacing:-.05em;margin:8px 0 22px}
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.feature{padding:23px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(145deg,#ffffff0d,#ffffff04)}.feature b{font-size:16px}.feature p{color:var(--muted);font-size:13px;margin:8px 0 0}
+.download{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:28px;border-radius:24px;border:1px solid #c7b7ff33;background:linear-gradient(110deg,#8468bf2b,#ffffff08);margin:8px 0 75px}.download h2{font-size:26px;margin:4px 0}.download p{color:var(--muted);font-size:13px;margin:0}
+footer{border-top:1px solid var(--line);padding:23px 0 32px;color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+@media(max-width:720px){.hero{grid-template-columns:1fr;gap:12px;padding:62px 0 45px}.preview{min-height:300px}.board-card{width:min(310px,92%)}.features{grid-template-columns:1fr}.download{align-items:flex-start;flex-direction:column}nav{gap:13px}nav a:first-child{display:none}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important}}
+</style>
+</head>
+<body><div class="wrap">
+<header><a class="brand" href="./"><span class="mark">♞</span> AXChess</a><nav><a href="#features">Features</a><a href="#download">Android</a><a href="https://github.com/4ksh2574/AXChess">Source ↗</a></nav></header>
+<main>
+<section class="hero"><div><div class="tag"><span class="dot"></span> Chess, without the clutter</div><h1>Make your<br><span>next move.</span></h1><p class="lead">A clean, mobile-first chess experience. Play a friend online, enjoy a local match, and focus on the board — not the noise.</p><div class="actions"><a class="btn primary" href="https://axchess.lovable.app">Play AXChess ↗</a><a class="btn secondary" href="https://github.com/4ksh2574/AXChess/releases/latest">Get Android APK ↓</a></div></div>
+<div class="preview"><div class="halo"></div><div class="board-card"><div class="board-head"><span>AXChess / Live board</span><span style="color:#a7dfbd">● Ready</span></div><div class="board" aria-hidden="true">
+<span class="sq">♜</span><span class="sq">♞</span><span class="sq">♝</span><span class="sq">♛</span><span class="sq">♚</span><span class="sq">♝</span><span class="sq">♞</span><span class="sq">♜</span>
+<span class="sq">♟</span><span class="sq">♟</span><span class="sq">♟</span><span class="sq">♟</span><span class="sq">♟</span><span class="sq">♟</span><span class="sq">♟</span><span class="sq">♟</span>
+<span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span><span class="sq"></span>
+<span class="sq">♙</span><span class="sq">♙</span><span class="sq">♙</span><span class="sq">♙</span><span class="sq">♙</span><span class="sq">♙</span><span class="sq">♙</span><span class="sq">♙</span>
+<span class="sq">♖</span><span class="sq">♘</span><span class="sq">♗</span><span class="sq">♕</span><span class="sq">♔</span><span class="sq">♗</span><span class="sq">♘</span><span class="sq">♖</span>
+</div><div class="board-foot"><span>Match status</span><span style="color:#f6f3fa">Ready to play</span></div></div></div></section>
+<section class="section" id="features"><div class="kicker">The essentials</div><h2>All about the game.</h2><div class="features">
+<article class="feature"><b>⌁ &nbsp; Play with a friend</b><p>Create a room, share its code, and connect for a peer-to-peer match.</p></article>
+<article class="feature"><b>♟ &nbsp; Play your way</b><p>Enjoy local pass-and-play and a focused board experience on mobile.</p></article>
+<article class="feature"><b>◈ &nbsp; Made for phones</b><p>Touch-friendly controls, responsive layouts, and an Android app package.</p></article>
+</div></section>
+<section class="download" id="download"><div><div class="kicker">AXChess for Android</div><h2>Take the board with you.</h2><p>Download the latest APK from the GitHub Releases page.</p></div><a class="btn primary" href="https://github.com/4ksh2574/AXChess/releases/latest">View latest release ↗</a></section>
+</main><footer><span>© 2026 AXChess</span><span>Built for the love of the game · <a href="https://github.com/4ksh2574/AXChess">View source on GitHub</a></span></footer>
+</div></body></html>

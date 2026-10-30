@@ -1,39 +1,43 @@
 # AXChess
 
-Role: You are an expert front-end engineer building a production-ready, mobile-first web app.
-Goal: Build a 100% free-to-host, serverless multiplayer chess web app inspired by Chess.com.
-Core Architecture & Engine Requirements:
-Framework & Engine: Use React, Vite, chess.js for strict chess rules (en passant, castling, pawn promotion, checkmate, stalemate), and react-chessboard for interactive drag-and-drop piece animations.
-P2P Serverless Multiplayer: Use peerjs (WebRTC) so no paid backend server is needed.
-Host Flow: Player 1 clicks "Create Game", which generates a short, readable unique Game Code (e.g., chess-8823). Provide a one-tap "Copy Code" button.
-Join Flow: Player 2 inputs the code in a text box and taps "Connect".
-State Sync: Sync move data (FEN strings) instantly over the PeerJS connection. Automatically flip the board view so Player 2 plays as Black from their perspective. Include a connection status badge (Connected / Disconnected).
-Design System (Material You / MD3):
-Use a cohesive Material Design 3 (Material You) theme featuring pastel tonal colors, heavily rounded corners (20px+ radii), elevated floating cards, and clean typography.
-Apply a matching, smooth Material You color palette to the chessboard, board borders, piece selection highlights, and UI elements.
-Mobile Responsiveness & Touch:
-Optimize the entire layout strictly for phone screens: zero horizontal scrolling, large touch targets, touch-friendly drag-and-drop, tap-to-select alternative move option, and player profile cards stacked neatly above and below the board.
-Include sound effects or visual indicators for legal moves, captures, and checks.
+A mobile-first chess experience built with React, TanStack Start, chess.js, react-chessboard and PeerJS. Play with a friend online or enjoy a local game.
 
-This project was built with [Lovable](https://lovable.dev).
+**Play now:** https://axchess.lovable.app  
+**Project site:** https://4ksh2574.github.io/AXChess/  
+**Android downloads:** https://github.com/4ksh2574/AXChess/releases/latest
 
-**Live app**: https://axchess.lovable.app
+## Distribution
 
-## Build with Lovable
+### GitHub Pages project site
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/4edac26a-a1ea-4d1f-b8e2-e414e88c1599).
+The polished project portal is published from the `docs/` folder by `.github/workflows/pages.yml`. It links to the live game and the latest Android release.
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+After merging this setup, open **Settings → Pages** and select **GitHub Actions** as the build and deployment source if it is not already selected. The Pages workflow then deploys automatically when `docs/` changes on `main`.
+
+> The current game uses TanStack Start server rendering and Lovable's hosted runtime. The Pages site is a static project portal; it does not pretend to host the server-rendered game itself. The Play button opens the existing live app so multiplayer, authentication and Lovable deployments continue to use the same application.
+
+### Android APK
+
+The Android package is a lightweight Capacitor shell that opens the same live AXChess app. This keeps the Android experience aligned with the Lovable-hosted version without maintaining a second copy of the chess and multiplayer code. An internet connection is required to load the live game.
+
+To build and publish an APK, push a version tag:
+
+```sh
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The `Build AXChess Android APK` workflow generates the Android project, builds an installable debug-signed APK, and attaches it to a GitHub Release. The APK is suitable for direct testing and installation; it is not a Play Store production-signed package.
 
 ## Development
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+This project is built with [Lovable](https://lovable.dev). Continue editing in the [Lovable project](https://lovable.dev/projects/4edac26a-a1ea-4d1f-b8e2-e414e88c1599); commits pushed to the connected repository remain available to Lovable.
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+git clone https://github.com/4ksh2574/AXChess.git
+cd AXChess
+npm install
 npm run dev
 ```
+
+Copy `.env.example` to `.env` and fill in your Supabase project URL and publishable key for local development. Never commit real environment files or service-role secrets.

@@ -1,0 +1,12 @@
+{
+  "appId": "com.axchess.app",
+  "appName": "AXChess",
+  "webDir": "android-web",
+  "server": {
+    "url": "https://axchess.lovable.app",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
