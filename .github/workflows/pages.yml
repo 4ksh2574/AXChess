@@ -1,11 +1,18 @@
-name: Deploy AXChess Pages
+name: Deploy AXChess app to GitHub Pages
 
 on:
   push:
     branches: [main]
     paths:
-      - "docs/**"
+      - "src/**"
+      - "public/**"
+      - "package.json"
+      - "bun.lock"
+      - "vite.config.pages.ts"
       - ".github/workflows/pages.yml"
+      - "docs/**"
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -18,20 +25,41 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Build static AXChess app
+        run: bun run build:pages
+      - name: Prepare GitHub Pages fallback
+        run: |
+          test -f dist/client/_shell.html
+          cp dist/client/_shell.html dist/client/404.html
+          mkdir -p dist/client/project
+          cp docs/index.html dist/client/project/index.html
+          touch dist/client/.nojekyll
       - name: Configure Pages
+        if: github.event_name != 'pull_request'
         uses: actions/configure-pages@v5
       - name: Upload site
+        if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs
+          path: dist/client
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4

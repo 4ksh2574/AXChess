@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isOwner() {
+      return signedIn() && request.auth.token.owner == true;
+    }
+
+    // Player profiles are private to their owner by default. Public profile
+    // discovery should be added deliberately with a minimal public projection.
+    match /profiles/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow create: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly([
+          'username', 'displayName', 'bio', 'avatarPath', 'createdAt', 'updatedAt'
+        ]);
+      allow update: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'username', 'displayName', 'bio', 'avatarPath', 'updatedAt'
+        ]);
+      allow delete: if false;
+    }
+
+    // Reserve normalized usernames transactionally at signup/profile edit.
+    match /usernames/{username} {
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid']);
+      allow update: if signedIn()
+        && resource.data.uid == request.auth.uid
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid']);
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    match /appSettings/{document} {
+      allow read: if true;
+      allow write: if isOwner();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
