@@ -156,7 +156,7 @@ function ProfilePage() {
         </Button>
       </GlassCard>
 
-      <ChangePasswordPanel />
+      <ChangePasswordPanel user={user} />
       <footer className="mt-auto pt-8 text-center text-[11px] font-medium tracking-wide text-muted-foreground">
         <WatermarkText />
       </footer>
@@ -164,12 +164,15 @@ function ProfilePage() {
   );
 }
 
-function ChangePasswordPanel() {
+function ChangePasswordPanel({ user }: {
+  user: { email?: string | null; providerData?: Array<{ providerId: string }> } | null;
+}) {
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const hasPasswordProvider = !!user?.providerData?.some((provider) => provider.providerId === "password");
 
   const save = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -179,12 +182,18 @@ function ChangePasswordPanel() {
     setBusy(true);
     try {
       const { auth, authSdk } = await getFirebaseRuntime();
-      const user = auth.currentUser;
-      if (!user?.email) throw new Error("Sign in with email and password to change your password.");
-      const credential = authSdk.EmailAuthProvider.credential(user.email, current);
-      await authSdk.reauthenticateWithCredential(user, credential);
-      await authSdk.updatePassword(user, next);
-      setMessage("Password changed");
+      const activeUser = auth.currentUser;
+      if (!activeUser?.email) throw new Error("Your signed-in account does not have an email address.");
+      if (hasPasswordProvider) {
+        const credential = authSdk.EmailAuthProvider.credential(activeUser.email, current);
+        await authSdk.reauthenticateWithCredential(activeUser, credential);
+        await authSdk.updatePassword(activeUser, next);
+        setMessage("Password changed");
+      } else {
+        const credential = authSdk.EmailAuthProvider.credential(activeUser.email, next);
+        await authSdk.linkWithCredential(activeUser, credential);
+        setMessage("Email/password sign-in added to your Google account.");
+      }
       setCurrent("");
       setNext("");
     } catch (changeError) {
@@ -199,14 +208,22 @@ function ChangePasswordPanel() {
 
   return (
     <GlassCard as="form" onSubmit={save} className="flex flex-col gap-3 rounded-[28px] bg-card p-5">
-      <p className="text-sm font-semibold text-foreground">Change password</p>
+      <p className="text-sm font-semibold text-foreground">
+        {hasPasswordProvider ? "Change password" : "Add email/password sign-in"}
+      </p>
+      {!hasPasswordProvider ? (
+        <p className="text-xs text-muted-foreground">
+          Add a password to your Google account so you can use either sign-in method.
+        </p>
+      ) : (
+        <label className="text-sm font-medium text-foreground">
+          Current password
+          <input type="password" autoComplete="current-password" value={current}
+            onChange={(event) => setCurrent(event.target.value)} className={inputClass} />
+        </label>
+      )}
       <label className="text-sm font-medium text-foreground">
-        Current password
-        <input type="password" autoComplete="current-password" value={current}
-          onChange={(event) => setCurrent(event.target.value)} className={inputClass} />
-      </label>
-      <label className="text-sm font-medium text-foreground">
-        New password
+        {hasPasswordProvider ? "New password" : "Create password"}
         <input type="password" required minLength={6} autoComplete="new-password" value={next}
           onChange={(event) => setNext(event.target.value)} className={inputClass} />
       </label>
@@ -214,7 +231,7 @@ function ChangePasswordPanel() {
       {message ? <p className="text-sm text-muted-foreground">{message}</p> : null}
       <Button variant="ghost" type="submit" disabled={busy}
         className="h-14 rounded-[20px] bg-secondary text-base font-medium text-secondary-foreground disabled:opacity-60">
-        {busy ? "Updating…" : "Update password"}
+        {busy ? "Updating…" : hasPasswordProvider ? "Update password" : "Add password"}
       </Button>
     </GlassCard>
   );
