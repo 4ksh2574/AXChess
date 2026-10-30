@@ -168,11 +168,8 @@ function AuthPage() {
     setBusy(true);
     try {
       const { auth, authSdk } = await getFirebaseRuntime();
-      await authSdk.sendPasswordResetEmail(auth, email.trim(), {
-        url: `${window.location.origin}/reset-password`,
-        handleCodeInApp: true,
-      });
-      setMessage("Password reset instructions have been sent if this email has an account. Follow the email link to continue.");
+      await authSdk.sendPasswordResetEmail(auth, email.trim());
+      setMessage("Password reset instructions have been sent if this email has an account. Open the email and follow Firebase's secure reset page, then return here to sign in.");
     } catch (resetError) {
       setError(firebaseErrorMessage(resetError));
     } finally {
