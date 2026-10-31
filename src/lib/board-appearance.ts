@@ -252,7 +252,7 @@ export type BackgroundOption = {
 export const BACKGROUNDS: BackgroundOption[] = [
   {
     id: "midnight",
-    label: "Midnight (default)",
+    label: "Midnight",
     url: null,
     scrim: "radial-gradient(circle at 50% 30%, oklch(0.24 0.04 300), oklch(0.1 0.01 300) 70%)",
     dark: true,
@@ -273,9 +273,9 @@ export const BACKGROUNDS: BackgroundOption[] = [
   },
   {
     id: "plain",
-    label: "Plain",
+    label: "Clean Light (default)",
     url: null,
-    scrim: "linear-gradient(oklch(0.983 0.008 315), oklch(0.96 0.014 320))",
+    scrim: "linear-gradient(180deg, #ffffff 0%, #f7f9fa 100%)",
     dark: false,
   },
   {
@@ -328,11 +328,12 @@ export const DEFAULT_APPEARANCE: AppearanceState = {
   saturation: 46,
   contrast: 46,
   paletteId: "custom",
-  background: "midnight",
+  background: "plain",
 };
 
 const STORAGE_KEY = "axchess-appearance";
 const DARK_DEFAULT_KEY = "axchess-dark-default-v1";
+const CLEAN_LIGHT_DEFAULT_KEY = "axchess-clean-light-default-v1";
 
 export function loadAppearance(): AppearanceState {
   if (typeof localStorage === "undefined") return DEFAULT_APPEARANCE;
@@ -340,10 +341,12 @@ export function loadAppearance(): AppearanceState {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return DEFAULT_APPEARANCE;
     const parsed = JSON.parse(raw) as Partial<AppearanceState>;
-    // One-time switch of existing players onto the new dark default.
-    if (!localStorage.getItem(DARK_DEFAULT_KEY)) {
-      localStorage.setItem(DARK_DEFAULT_KEY, "1");
-      if (parsed.background !== "custom") parsed.background = "midnight";
+    // Migrate the previous first-run dark default to the new Clean Light theme.
+    if (!localStorage.getItem(CLEAN_LIGHT_DEFAULT_KEY)) {
+      localStorage.setItem(CLEAN_LIGHT_DEFAULT_KEY, "1");
+      if (parsed.background === "midnight" && localStorage.getItem(DARK_DEFAULT_KEY)) {
+        parsed.background = "plain";
+      }
     }
     return {
       pieceSet: (parsed.pieceSet ?? DEFAULT_APPEARANCE.pieceSet) as PieceSetId,
