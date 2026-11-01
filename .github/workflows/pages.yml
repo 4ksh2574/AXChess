@@ -36,9 +36,12 @@ jobs:
         run: bun install --frozen-lockfile
       - name: Build static AXChess app
         run: bun run build:pages
-      - name: Prepare GitHub Pages fallback
+      - name: Prepare GitHub Pages app entry points
         run: |
           test -f dist/client/_shell.html
+          # TanStack Start SPA emits its browser app shell as _shell.html.
+          # Publish it as the root document so Pages opens the actual game.
+          cp dist/client/_shell.html dist/client/index.html
           cp dist/client/_shell.html dist/client/404.html
           mkdir -p dist/client/project
           cp docs/index.html dist/client/project/index.html
