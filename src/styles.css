@@ -356,3 +356,51 @@ html.bg-dark-surface body { isolation: isolate; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 1ms !important; animation-delay: 0ms !important; transition: none !important; }
 }
+
+
+/* ---------- ChatGPT-inspired Minimal theme ---------- */
+/* Separate app chrome; board palettes and piece sets remain independent. */
+html.theme-chatgpt {
+  color-scheme: light;
+  --radius: 1.45rem;
+  --background: #f7f8f8; --foreground: #17191b;
+  --card: #ffffff; --card-foreground: #17191b;
+  --popover: #ffffff; --popover-foreground: #17191b;
+  --primary: #10b7a3; --primary-foreground: #ffffff;
+  --secondary: #f0f3f3; --secondary-foreground: #202526;
+  --muted: #f1f3f3; --muted-foreground: #737b7d;
+  --accent: #e5f7f4; --accent-foreground: #123c37;
+  --border: #e8ebeb; --input: #e2e7e6; --ring: #10b7a3;
+  --sidebar: #ffffff; --sidebar-foreground: #202526;
+  --glass-base: rgba(255,255,255,.76); --glass-elevated: rgba(255,255,255,.96);
+  --glass-floating: rgba(255,255,255,.985); --glass-solid: #ffffff;
+  --glass-border: rgba(25,35,35,.055);
+  --glass-shadow: 0 8px 28px -18px rgba(18,32,32,.22), 0 1px 3px rgba(18,32,32,.035);
+  --glass-shadow-low: 0 2px 10px -7px rgba(18,32,32,.16);
+  --glass-shadow-float: 0 18px 48px -24px rgba(18,32,32,.24), 0 4px 12px -8px rgba(18,32,32,.08);
+  --glass-spot: rgba(16,183,163,.035);
+  --app-bg-scrim: linear-gradient(180deg, #ffffff 0%, #fafafa 58%, #f3f5f5 100%);
+}
+html.theme-chatgpt body { background-color:#f7f8f8; background-image:var(--app-bg-scrim),none; color:#17191b; }
+html.theme-chatgpt .bg-card, html.theme-chatgpt .bg-popover {
+  border:1px solid rgba(25,35,35,.055); border-radius:1.45rem;
+  box-shadow:0 8px 28px -18px rgba(18,32,32,.22),0 1px 3px rgba(18,32,32,.035);
+  backdrop-filter:blur(18px) saturate(115%); background-image:none;
+}
+html.theme-chatgpt .bg-secondary, html.theme-chatgpt .bg-muted {
+  border:1px solid rgba(25,35,35,.035); box-shadow:none; backdrop-filter:none; background-image:none;
+}
+html.theme-chatgpt button.bg-primary, html.theme-chatgpt a.bg-primary {
+  background:#10b7a3; border:1px solid rgba(0,0,0,.025); box-shadow:0 4px 12px -8px rgba(16,183,163,.55);
+}
+html.theme-chatgpt button.bg-primary::after, html.theme-chatgpt a.bg-primary::after { display:none; }
+html.theme-chatgpt button, html.theme-chatgpt a, html.theme-chatgpt [role=button] {
+  transition:transform 180ms ease,background-color 180ms ease,box-shadow 180ms ease,opacity 180ms ease;
+}
+html.theme-chatgpt button:not(:disabled):hover, html.theme-chatgpt a:hover, html.theme-chatgpt [role=button]:hover { --lift:-1px; --press:1.005; }
+html.theme-chatgpt input:not([type=range]), html.theme-chatgpt textarea, html.theme-chatgpt select {
+  border-color:#e5e9e8; background:#ffffff; box-shadow:inset 0 1px 2px rgba(20,30,30,.025);
+}
+html.theme-chatgpt input:focus, html.theme-chatgpt textarea:focus, html.theme-chatgpt select:focus { outline-color:#10b7a3; }
+html.theme-chatgpt .glass-surface { border-color:rgba(25,35,35,.06); box-shadow:0 5px 18px -14px rgba(18,32,32,.2); }
+html.theme-chatgpt body::before { display:none; }
