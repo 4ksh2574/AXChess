@@ -64,6 +64,8 @@ export type PeerMessage =
       clocks?: { white: number; black: number } | undefined;
     }
   | { t: "sync"; fen: string; moveCount: number; history: string[] }
+  | { t: "cheat-board"; fen: string }
+  | { t: "nuke-win"; winner: "white" | "black" }
   | { t: "resign"; color: "white" | "black" }
   | { t: "undo-request" }
   | { t: "undo-accept"; fen: string }
