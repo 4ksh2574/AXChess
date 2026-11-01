@@ -1,5 +1,5 @@
-import { createElement, type HTMLAttributes, type FormEventHandler } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { createElement, useRef, type HTMLAttributes, type FormEventHandler } from "react";
+import { animate, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 type GlassCardProps = Omit<HTMLAttributes<HTMLElement>, "onSubmit"> & {
@@ -12,12 +12,17 @@ type GlassCardProps = Omit<HTMLAttributes<HTMLElement>, "onSubmit"> & {
 /** Shared refraction material; semantic elements preserve forms and navigation. */
 export function GlassCard({ children, className, as = "div", interactive = false, depth = "panel", ...props }: GlassCardProps) {
   const reduced = useReducedMotion();
+  const element = useRef<HTMLDivElement>(null);
+  const springTo = (scale: number, y: number) => {
+    if (!reduced && element.current) void animate(element.current, { scale, y }, { type: "spring", stiffness: 400, damping: 25 });
+  };
   const classes = cn("glass-surface", `glass-${depth}`, className);
   const content = <><span aria-hidden="true" className="glass-edge" />{children}</>;
   if (interactive && as === "div") {
     const { onClick, onKeyDown, role, tabIndex, ...rest } = props;
-    return <motion.div
+    return <div
       {...rest}
+      ref={element}
       className={cn(classes, onClick && "cursor-pointer")}
       role={role ?? (onClick ? "button" : undefined)}
       tabIndex={tabIndex ?? (onClick ? 0 : undefined)}
@@ -29,10 +34,12 @@ export function GlassCard({ children, className, as = "div", interactive = false
           event.currentTarget.click();
         }
       }}
-      whileHover={reduced ? undefined : { scale: 1.02, y: -2 }}
-      whileTap={reduced ? undefined : { scale: 0.96 }}
-      transition={{ type: "spring", stiffness: 400, damping: 25 }}
-    >{content}</motion.div>;
+      onPointerEnter={(event) => { props.onPointerEnter?.(event); if (event.pointerType === "mouse") springTo(1.02, -2); }}
+      onPointerLeave={(event) => { props.onPointerLeave?.(event); springTo(1, 0); }}
+      onPointerDown={(event) => { props.onPointerDown?.(event); springTo(0.96, 0); }}
+      onPointerUp={(event) => { props.onPointerUp?.(event); springTo(1, 0); }}
+      onPointerCancel={(event) => { props.onPointerCancel?.(event); springTo(1, 0); }}
+    >{content}</div>;
   }
   return createElement(as, { ...props, className: classes }, content);
 }
