@@ -903,8 +903,8 @@ export default function ChessApp() {
                 className="min-h-11 cursor-pointer rounded-xl px-3 focus:bg-primary/10"
                 onSelect={() => setCheatsEnabled((value) => !value)}
               >
-                <Check className="h-4 w-4" />
-                <span>Cheats {cheatsEnabled ? "on" : "off"}</span>
+                {cheatsEnabled ? <Check className="h-4 w-4" /> : <span className="h-4 w-4" />}
+                <span>Cheats</span>
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="min-h-11 cursor-pointer rounded-xl px-3 focus:bg-primary/10"
