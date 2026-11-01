@@ -170,7 +170,7 @@ export default function ChessApp() {
         return;
       }
       if (msg.t === "nuke-win") {
-        setNukeWinner(msg.winner); setNukeAnimating(true); setResultDismissed(false); window.setTimeout(() => setNukeAnimating(false), 4200); sounds.end(); return;
+        setNukeConfirmOpen(false); setNukeWinner(msg.winner); setNukeAnimating(true); setResultDismissed(false); window.setTimeout(() => setNukeAnimating(false), 5000); sounds.end(); return;
       }
       if (msg.t === "resign") {
         setResigned(msg.color);
