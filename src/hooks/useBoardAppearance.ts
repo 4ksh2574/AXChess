@@ -36,9 +36,11 @@ function syncCssVars(current: AppearanceState, theme: BoardTheme) {
   const url = current.background === "custom" ? customBg : option.url;
   root.style.setProperty("--app-bg-image", url ? `url("${url}")` : "none");
   root.style.setProperty("--app-bg-scrim", option.scrim);
-  root.classList.toggle("bg-dark-surface", true);
+  const mode = current.themeMode ?? "dark";
+  root.classList.toggle("bg-dark-surface", mode === "dark");
   root.classList.toggle("theme-chatgpt", false);
-  root.classList.toggle("theme-liquid", true);
+  root.classList.toggle("theme-liquid", mode === "dark");
+  root.classList.toggle("theme-light", mode === "light");
 }
 
 function subscribe(listener: () => void) {
