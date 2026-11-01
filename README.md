@@ -3,18 +3,19 @@
 A mobile-first chess experience built with React, TanStack Start, chess.js, react-chessboard and PeerJS. Play with a friend online or enjoy a local game.
 
 **Play now:** https://axchess.lovable.app  
-**Project site:** https://4ksh2574.github.io/AXChess/  
+**Play on GitHub Pages:** https://4ksh2574.github.io/AXChess/  
+**Project information:** https://4ksh2574.github.io/AXChess/project/  
 **Android downloads:** https://github.com/4ksh2574/AXChess/releases/latest
 
 ## Distribution
 
 ### GitHub Pages project site
 
-The polished project portal is published from the `docs/` folder by `.github/workflows/pages.yml`. It links to the live game and the latest Android release.
+The playable GitHub Pages app is built from the TanStack Start SPA configuration in `vite.config.pages.ts`. The deployment workflow publishes the generated app shell as both `index.html` and `404.html`, so the project root always opens the game and client-side routes can recover on refresh. The separate static project information page is published at `/project/` from `docs/index.html`.
 
-After merging this setup, open **Settings → Pages** and select **GitHub Actions** as the build and deployment source if it is not already selected. The Pages workflow then deploys automatically when `docs/` changes on `main`.
+GitHub Pages must use **Settings → Pages → Build and deployment → GitHub Actions**. The Pages workflow runs on every push to `main` (not only selected folders), on pull requests for build validation, and manually through `workflow_dispatch`. Before deployment it checks that the root app shell and its local JavaScript/CSS assets exist; a failed check blocks publication.
 
-> The current game uses TanStack Start server rendering and Lovable's hosted runtime. The Pages site is a static project portal; it does not pretend to host the server-rendered game itself. The Play button opens the existing live app so multiplayer, authentication and Lovable deployments continue to use the same application.
+The Lovable-hosted app at `https://axchess.lovable.app` remains a separate deployment target. Changes to this repository do not automatically publish to Lovable.
 
 ### Android APK
 
