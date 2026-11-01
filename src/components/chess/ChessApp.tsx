@@ -551,6 +551,8 @@ export default function ChessApp() {
     }
     setMode("online");
     modeRef.current = "online";
+    setFreeMoveActive(false);
+    setNukeWinner(null);
     gameRef.current = new Chess();
     refresh();
     setMyColor("black");
