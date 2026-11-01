@@ -22,6 +22,10 @@ import {
   Cpu,
   ArrowLeft,
   RotateCw,
+  Settings2,
+  Sun,
+  Moon,
+  UserRound,
 } from "lucide-react";
 import { usePeerGame } from "@/hooks/usePeerGame";
 import {
@@ -38,17 +42,23 @@ import { sounds, unlockAudio, setMuted } from "@/lib/sounds";
 import { useBoardAppearance } from "@/hooks/useBoardAppearance";
 import { PlayerCard } from "./PlayerCard";
 import { useAuth } from "@/hooks/useAuth";
-import { User as UserIcon } from "lucide-react";
 import logoLight from "@/assets/logo-light.png";
 import logoDark from "@/assets/logo-dark.png";
 import { DIFFICULTIES, requestEngineMove, type Difficulty } from "@/lib/chess-ai";
 import { TIME_PRESETS, formatClock, type TimeControl } from "@/lib/time-control";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type Screen = "home" | "create" | "join" | "setup" | "game";
 type Mode = "online" | "pass" | "ai";
 
 export default function ChessApp() {
-  const { theme, pieces } = useBoardAppearance();
+  const { theme, pieces, appearance, setAppearance } = useBoardAppearance();
   const { user, profile, avatarUrl } = useAuth();
   const [opponent, setOpponent] = useState<{ name: string; avatar: string | null }>({
     name: "",
@@ -775,32 +785,61 @@ export default function ChessApp() {
             AXChess
           </h1>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
-        <Link
-          to={user ? "/profile" : "/auth"}
-          aria-label={user ? "Your profile" : "Sign in"}
-          className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-2xl bg-secondary text-secondary-foreground active:scale-95"
-        >
-          {avatarUrl ? (
-            <img src={avatarUrl} alt="Your avatar" className="h-full w-full object-cover" />
-          ) : (
-            <UserIcon className="h-5 w-5" />
-          )}
-        </Link>
-        <Link
-          to="/appearance"
-          aria-label="Board appearance"
-          className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-secondary text-secondary-foreground active:scale-95"
-        >
-          <Palette className="h-5 w-5" />
-        </Link>
-        <Button variant="ghost"
-          onClick={toggleMute}
-          aria-label={muted ? "Unmute sounds" : "Mute sounds"}
-          className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-secondary text-secondary-foreground active:scale-95"
-        >
-          {muted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-        </Button>
+        <div className="flex shrink-0 items-center">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                aria-label="Open settings"
+                title="Settings"
+                className="glass-surface grid h-12 w-12 place-items-center rounded-full border border-white/15 bg-white/10 text-foreground shadow-lg backdrop-blur-2xl hover:bg-white/20"
+              >
+                <Settings2 className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              sideOffset={12}
+              className="glass-surface z-[80] w-64 rounded-[24px] border border-white/20 bg-card/90 p-2 text-foreground shadow-2xl backdrop-blur-3xl"
+            >
+              <div className="px-3 py-2">
+                <p className="text-sm font-semibold">Settings</p>
+                <p className="text-xs text-muted-foreground">Personalise your AXChess experience</p>
+              </div>
+              <DropdownMenuSeparator className="my-1 bg-border/70" />
+              <DropdownMenuItem asChild className="min-h-11 cursor-pointer rounded-xl px-3 focus:bg-primary/10">
+                <Link to={user ? "/profile" : "/auth"}>
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="" className="h-6 w-6 rounded-full object-cover" />
+                  ) : (
+                    <UserRound className="h-4 w-4" />
+                  )}
+                  <span>{user ? "Your profile" : "Sign in"}</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="min-h-11 cursor-pointer rounded-xl px-3 focus:bg-primary/10">
+                <Link to="/appearance">
+                  <Palette className="h-4 w-4" />
+                  <span>Board & piece appearance</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="my-1 bg-border/70" />
+              <DropdownMenuItem
+                className="min-h-11 cursor-pointer rounded-xl px-3 focus:bg-primary/10"
+                onSelect={() => setAppearance({ themeMode: (appearance.themeMode ?? "dark") === "dark" ? "light" : "dark" })}
+              >
+                {(appearance.themeMode ?? "dark") === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                <span>Switch to {(appearance.themeMode ?? "dark") === "dark" ? "light" : "dark"} mode</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="min-h-11 cursor-pointer rounded-xl px-3 focus:bg-primary/10"
+                onSelect={toggleMute}
+              >
+                {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                <span>{muted ? "Turn sound on" : "Turn sound off"}</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 
