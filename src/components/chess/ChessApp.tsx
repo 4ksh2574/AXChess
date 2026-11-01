@@ -95,6 +95,9 @@ export default function ChessApp() {
   const [joinInput, setJoinInput] = useState("");
   const [copied, setCopied] = useState<"code" | "link" | null>(null);
   const [muted, setMutedState] = useState(false);
+  const [cheatsEnabled, setCheatsEnabled] = useState(() => { try { return localStorage.getItem("axchess-cheats") === "true"; } catch { return false; } });
+  const [nukeWinner, setNukeWinner] = useState<"white" | "black" | null>(null);
+  const [nukeAnimating, setNukeAnimating] = useState(false);
   const [resigned, setResigned] = useState<"white" | "black" | null>(null);
   const [resultDismissed, setResultDismissed] = useState(false);
   const [undoState, setUndoState] = useState<"idle" | "sent" | "incoming">("idle");
@@ -159,6 +162,13 @@ export default function ChessApp() {
           refresh();
         }
         return;
+      }
+      if (msg.t === "cheat-board") {
+        try { game.load(msg.fen); setLastMove(null); setSelected(null); setPremoves([]); refresh(); } catch { /* ignore malformed remote board state */ }
+        return;
+      }
+      if (msg.t === "nuke-win") {
+        setNukeWinner(msg.winner); setNukeAnimating(true); setResultDismissed(false); window.setTimeout(() => setNukeAnimating(false), 4200); sounds.end(); return;
       }
       if (msg.t === "resign") {
         setResigned(msg.color);
@@ -385,6 +395,22 @@ export default function ChessApp() {
     if (modeRef.current === "pass") return side;
     return side === myColorRef.current ? side : null;
   }, []);
+
+  const freePlace = useCallback((from: Square, to: Square) => {
+    if (!cheatsEnabled || resultRef.current || from === to) return false;
+    const current = gameRef.current;
+    const piece = current.remove(from);
+    if (!piece) return false;
+    const target = current.get(to);
+    if (target?.type === "k") { current.put(piece, from); return false; }
+    current.remove(to);
+    try {
+      if (!current.put(piece, to)) { current.put(piece, from); return false; }
+      const alteredFen = current.fen(); current.load(alteredFen); setSelected(null); setLastMove({ from, to }); setPremoves([]); refresh();
+      if (modeRef.current === "online") peer.send({ t: "cheat-board", fen: alteredFen });
+      sounds.move(); return true;
+    } catch { return false; }
+  }, [cheatsEnabled, peer, refresh, setPremoves]);
 
   const tryMove = useCallback(
     (from: Square, to: Square) => {
@@ -636,6 +662,35 @@ export default function ChessApp() {
     sounds.move();
   };
 
+  const triggerNuke = useCallback(() => {
+    if (!cheatsEnabled || resultRef.current) return;
+    if (!window.confirm("NUKE WIN will immediately end this match. Continue?")) return;
+    if (!window.confirm("Final confirmation: trigger the cinematic victory effect?")) return;
+    setNukeWinner(myColorRef.current); setNukeAnimating(true); setResultDismissed(false);
+    if (modeRef.current === "online") peer.send({ t: "nuke-win", winner: myColorRef.current });
+    window.setTimeout(() => setNukeAnimating(false), 4200); sounds.end();
+  }, [cheatsEnabled, peer]);
+
+  useEffect(() => {
+    if (screen === "game" || typeof window === "undefined") return;
+    try { localStorage.setItem("axchess-cheats", String(cheatsEnabled)); } catch { /* storage unavailable */ }
+  }, [cheatsEnabled, screen]);
+
+  useEffect(() => {
+    if (screen !== "game" || !cheatsEnabled) return;
+    let buffer = "";
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target && ["INPUT", "TEXTAREA"].includes(target.tagName)) return;
+      if (event.key.length !== 1 || !/[a-z]/i.test(event.key)) return;
+      buffer = (buffer + event.key.toLowerCase()).slice(-16);
+      if (buffer.endsWith("freemove")) { buffer = ""; return; }
+      if (buffer.endsWith("nuke")) { buffer = ""; triggerNuke(); }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [screen, cheatsEnabled, triggerNuke]);
+
   const declineUndo = () => {
     peer.send({ t: "undo-decline" });
     setUndoState("idle");
@@ -647,6 +702,8 @@ export default function ChessApp() {
     setSelected(null);
     setResigned(null);
     setFlagged(null);
+    setNukeWinner(null);
+    setNukeAnimating(false);
     setResultDismissed(false);
     resetClocks(timeControl);
     refresh();
@@ -668,6 +725,7 @@ export default function ChessApp() {
         : color === "white"
           ? "White"
           : "Black";
+    if (nukeWinner) return nukeWinner === myColor ? "NUKE WIN — VICTORY" : "NUKE WIN — OPPONENT WINS";
     if (flagged) {
       const winner = flagged === "white" ? "black" : "white";
       return isLocal
@@ -691,7 +749,7 @@ export default function ChessApp() {
     if (game.isDraw()) return "Draw";
     return null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fen, resigned, myColor, flagged, isLocal, mode]);
+  }, [fen, resigned, myColor, flagged, isLocal, mode, nukeWinner]);
   resultRef.current = result;
 
   // Clocks: start ticking once the first move has been played.
@@ -830,6 +888,14 @@ export default function ChessApp() {
               >
                 {(appearance.themeMode ?? "dark") === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
                 <span>Switch to {(appearance.themeMode ?? "dark") === "dark" ? "light" : "dark"} mode</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={screen === "game"}
+                className="min-h-11 cursor-pointer rounded-xl px-3 focus:bg-primary/10"
+                onSelect={() => setCheatsEnabled((value) => !value)}
+              >
+                <Check className="h-4 w-4" />
+                <span>Cheats {cheatsEnabled ? "on" : "off"}</span>
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="min-h-11 cursor-pointer rounded-xl px-3 focus:bg-primary/10"
@@ -1127,8 +1193,9 @@ export default function ChessApp() {
                   boardOrientation: orientation,
                   pieces,
                   squareStyles,
-                  allowDragging: !result && ((isMyTurn && !thinking) || mode !== "pass"),
+                  allowDragging: !result && (cheatsEnabled || ((isMyTurn && !thinking) || mode !== "pass")), 
                   canDragPiece: ({ piece }) => {
+                    if (cheatsEnabled) return true;
                     const letter = piece.pieceType[0];
                     const pc = premoveColor();
                     if (pc) return letter === pc;
@@ -1144,6 +1211,7 @@ export default function ChessApp() {
                   onPieceDrop: ({ sourceSquare, targetSquare }) => {
                     unlockAudio();
                     if (!targetSquare || result) return false;
+                    if (cheatsEnabled) return freePlace(sourceSquare as Square, targetSquare as Square);
                     if (premoveColor()) return queuePremove(sourceSquare, targetSquare);
                     if (thinking) return false;
                     return tryMove(sourceSquare as Square, targetSquare as Square);
@@ -1195,6 +1263,13 @@ export default function ChessApp() {
             </p>
           ) : null}
 
+          {(() => {
+            const history = game.history({ verbose: true });
+            let captureRun = 0;
+            for (let i = history.length - 1; i >= 0 && history[i].captured; i--) captureRun++;
+            const checkCount = history.filter((move) => move.san.includes("+") || move.san.includes("#")).length;
+            return <Button variant="ghost" onClick={triggerNuke} disabled={!cheatsEnabled || (captureRun < 7 && checkCount < 7) || !!result || (!isLocal && peer.status !== "connected")} className="order-5 h-9 self-center rounded-full border border-red-900/20 bg-red-950/10 px-3 text-xs font-medium text-red-800/70 disabled:opacity-40 dark:text-red-300/60 lg:order-none">Nuke Win</Button>;
+          })()}
           <div className="order-6 grid grid-cols-3 gap-3 lg:order-none">
             <Button variant="ghost"
               onClick={requestUndo}
@@ -1239,6 +1314,14 @@ export default function ChessApp() {
         </section>
       ) : null}
 
+      {nukeAnimating ? (
+        <div className="fixed inset-0 z-[100] grid place-items-center overflow-hidden bg-[#170609]/95 text-center text-white">
+          <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_center,rgba(255,45,45,0.75),rgba(90,0,12,0.35)_35%,transparent_70%)]" />
+          <div className="absolute h-[70vmin] w-[70vmin] animate-ping rounded-full border-4 border-red-400/40" />
+          <div className="absolute h-[48vmin] w-[48vmin] animate-pulse rounded-full border border-orange-200/50 shadow-[0_0_100px_40px_rgba(255,35,35,0.35)]" />
+          <div className="relative z-10 px-6 drop-shadow-[0_0_24px_rgba(255,70,40,0.9)]"><p className="text-xs font-bold uppercase tracking-[0.45em] text-red-200">System override</p><h2 className="mt-4 text-5xl font-black tracking-tight sm:text-7xl">NUKE WIN</h2><p className="mt-3 text-sm font-semibold uppercase tracking-[0.3em] text-orange-100">Victory sequence</p></div>
+        </div>
+      ) : null}
       {undoState === "incoming" ? (
         <div className="fixed inset-0 z-50 flex items-end bg-foreground/40 p-4 sm:items-center sm:justify-center">
           <GlassCard depth="floating" className="w-full rounded-[28px] bg-card p-6 text-center sm:max-w-md">
