@@ -29,8 +29,8 @@ function emit() {
 function syncCssVars(current: AppearanceState, theme: BoardTheme) {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
-  root.style.setProperty("--primary", theme.accent);
-  root.style.setProperty("--ring", theme.accent);
+  root.style.setProperty("--primary", "#10B8A0");
+  root.style.setProperty("--ring", "#10B8A0");
 
   const option = BACKGROUNDS.find((b) => b.id === current.background) ?? BACKGROUNDS[0]!;
   const url = current.background === "custom" ? customBg : option.url;
