@@ -170,7 +170,7 @@ export default function ChessApp() {
         return;
       }
       if (msg.t === "nuke-win") {
-        setNukeConfirmOpen(false); setNukeWinner(msg.winner); setNukeAnimating(true); setResultDismissed(false); window.setTimeout(() => setNukeAnimating(false), 5000); sounds.end(); return;
+        setNukeConfirmOpen(false); setNukeWinner(msg.winner); setNukeAnimating(true); setResultDismissed(false); window.setTimeout(() => setNukeAnimating(false), 5800); sounds.end(); return;
       }
       if (msg.t === "resign") {
         setResigned(msg.color);
@@ -684,7 +684,7 @@ export default function ChessApp() {
     setNukeAnimating(true);
     setResultDismissed(false);
     if (modeRef.current === "online") peer.send({ t: "nuke-win", winner: myColorRef.current });
-    window.setTimeout(() => setNukeAnimating(false), 5000);
+    window.setTimeout(() => setNukeAnimating(false), 5800);
     sounds.end();
   }, [cheatsEnabled, peer]);
 
@@ -1348,28 +1348,46 @@ export default function ChessApp() {
       ) : null}
 
       {nukeAnimating ? (
-        <div className="ax-nuke fixed inset-0 z-[100] grid place-items-center overflow-hidden text-center text-white">
+        <div className="ax-nuke fixed inset-0 z-[100] isolate grid place-items-center overflow-hidden bg-[#09080d] text-center text-white">
           <style>{`
-            @keyframes ax-nuke-in { 0% { opacity: 0; transform: scale(.72) rotate(-8deg); filter: blur(18px); } 18% { opacity: 1; filter: blur(0); } 72% { opacity: 1; transform: scale(1) rotate(0); } 100% { opacity: 0; transform: scale(1.12); } }
-            @keyframes ax-nuke-ring { 0% { transform: scale(.18) rotate(0); opacity: 0; } 20% { opacity: .85; } 100% { transform: scale(1.7) rotate(140deg); opacity: 0; } }
-            @keyframes ax-nuke-beam { 0% { transform: translateY(110%) scaleY(.2); opacity: 0; } 25% { opacity: .8; } 100% { transform: translateY(-110%) scaleY(1); opacity: 0; } }
-            @keyframes ax-nuke-title { 0%,12% { opacity: 0; transform: translateY(22px); letter-spacing: .55em; } 28%,78% { opacity: 1; transform: translateY(0); letter-spacing: .12em; } 100% { opacity: 0; transform: translateY(-12px); } }
-            .ax-nuke { background: radial-gradient(ellipse at 50% 48%, #54202b 0%, #1a101c 42%, #080b16 100%); animation: ax-nuke-in 5s ease both; }
-            .ax-nuke-ring { position:absolute; width:min(78vw,66vh); aspect-ratio:1; border:1px solid rgba(255,214,153,.65); border-radius:50%; box-shadow:0 0 45px rgba(255,92,77,.2),inset 0 0 45px rgba(255,214,153,.08); animation:ax-nuke-ring 3.4s cubic-bezier(.12,.7,.2,1) both; }
-            .ax-nuke-beam { position:absolute; width:1px; height:150%; background:linear-gradient(transparent,rgba(255,218,166,.55),transparent); animation:ax-nuke-beam 2.5s ease-in-out both; }
-            .ax-nuke-title { animation:ax-nuke-title 5s ease both; }
+            @keyframes ax-nuke-scene { 0%,100% { transform:scale(1); } 9% { transform:scale(1.035) translate(2px,-2px); } 13% { transform:scale(.99) translate(-2px,1px); } 18% { transform:scale(1.012); } }
+            @keyframes ax-nuke-flash { 0% { opacity:0; } 2% { opacity:1; } 8% { opacity:.9; } 19% { opacity:0; } 100% { opacity:0; } }
+            @keyframes ax-nuke-horizon { 0% { opacity:0; transform:scaleX(.08); } 8% { opacity:1; transform:scaleX(1.5); } 35% { opacity:.8; transform:scaleX(1.2); } 100% { opacity:0; transform:scaleX(1.8); } }
+            @keyframes ax-nuke-fireball { 0% { opacity:0; transform:translate(-50%,35%) scale(.04); filter:blur(18px); } 9% { opacity:1; transform:translate(-50%,0) scale(.7); filter:blur(2px); } 24% { opacity:1; transform:translate(-50%,-8%) scale(1.15); filter:blur(0); } 58% { opacity:.9; transform:translate(-50%,-18%) scale(1.28); } 100% { opacity:0; transform:translate(-50%,-30%) scale(1.5); } }
+            @keyframes ax-nuke-stem { 0%,8% { opacity:0; transform:translateX(-50%) scaleY(.05); } 22% { opacity:1; transform:translateX(-50%) scaleY(.72); } 48% { opacity:.95; transform:translateX(-50%) scaleY(1); } 100% { opacity:0; transform:translateX(-50%) scaleY(1.2); } }
+            @keyframes ax-nuke-cap { 0%,14% { opacity:0; transform:translateX(-50%) scale(.08); } 32% { opacity:1; transform:translateX(-50%) scale(1.08); } 55% { opacity:.95; transform:translateX(-50%) scale(1); } 100% { opacity:0; transform:translateX(-50%) scale(1.2); } }
+            @keyframes ax-nuke-wave { 0% { opacity:0; transform:translate(-50%,-50%) scale(.05); } 12% { opacity:.85; } 100% { opacity:0; transform:translate(-50%,-50%) scale(3.8); } }
+            @keyframes ax-nuke-title { 0%,38% { opacity:0; transform:translateY(28px) scale(.92); letter-spacing:.55em; filter:blur(10px); } 55%,82% { opacity:1; transform:translateY(0) scale(1); letter-spacing:.16em; filter:blur(0); } 100% { opacity:0; transform:translateY(-12px); } }
+            @keyframes ax-nuke-embers { 0% { opacity:0; transform:translateY(25vh) scale(.3); } 20% { opacity:.8; } 100% { opacity:0; transform:translateY(-70vh) scale(1.4); } }
+            .ax-nuke { background:radial-gradient(ellipse at 50% 100%,#4a1c17 0%,#171018 42%,#070910 78%); animation:ax-nuke-scene 5.8s ease-in-out both; }
+            .ax-nuke-flash { position:absolute; inset:0; z-index:30; pointer-events:none; background:radial-gradient(ellipse at 50% 58%,#fff 0%,#fff6d9 23%,rgba(255,190,105,.82) 48%,rgba(255,90,45,.15) 72%,transparent 100%); animation:ax-nuke-flash 5.8s ease-out both; mix-blend-mode:screen; }
+            .ax-nuke-horizon { position:absolute; left:-20%; top:57%; width:140%; height:3px; background:#fff1c6; box-shadow:0 0 24px 10px #ffb45c,0 0 90px 30px rgba(255,85,35,.65); animation:ax-nuke-horizon 4.8s ease-out both; }
+            .ax-nuke-fireball { position:absolute; left:50%; top:58%; width:min(76vw,70vh); aspect-ratio:1; border-radius:50%; background:radial-gradient(circle at 50% 42%,#fffce4 0%,#fff0b2 9%,#ffc45d 23%,#ff792f 43%,#a92d26 62%,rgba(58,17,26,.1) 73%,transparent 76%); filter:drop-shadow(0 0 55px rgba(255,105,42,.8)); animation:ax-nuke-fireball 5.5s cubic-bezier(.16,.72,.2,1) both; }
+            .ax-nuke-stem { position:absolute; left:50%; top:23%; width:min(24vw,22vh); height:58%; transform-origin:bottom; border-radius:48% 48% 24% 24%; background:linear-gradient(90deg,rgba(91,29,25,.08),#ff8c43 24%,#fff0b3 48%,#ff8a3c 70%,rgba(86,25,29,.12)); filter:blur(3px) drop-shadow(0 0 34px rgba(255,112,52,.65)); animation:ax-nuke-stem 5.4s ease-out both; }
+            .ax-nuke-cap { position:absolute; left:50%; top:12%; width:min(78vw,76vh); height:min(44vw,40vh); border-radius:50% 50% 44% 44%; background:radial-gradient(ellipse at 50% 72%,#fff0b4 0%,#ffbd67 18%,#f4773c 42%,#8f3430 67%,rgba(39,20,32,.15) 78%,transparent 82%); filter:drop-shadow(0 0 35px rgba(255,120,54,.55)); animation:ax-nuke-cap 5.5s cubic-bezier(.18,.7,.2,1) both; }
+            .ax-nuke-wave { position:absolute; left:50%; top:60%; width:min(76vw,70vh); aspect-ratio:1; border:2px solid rgba(255,222,164,.8); border-radius:50%; box-shadow:0 0 35px rgba(255,124,60,.45),inset 0 0 25px rgba(255,190,120,.2); animation:ax-nuke-wave 4.8s cubic-bezier(.1,.7,.2,1) both; }
+            .ax-nuke-title { animation:ax-nuke-title 5.8s ease both; }
+            .ax-nuke-ember { position:absolute; bottom:8%; width:4px; height:4px; border-radius:50%; background:#ffd18a; box-shadow:0 0 12px 3px #ff813f; animation:ax-nuke-embers 3.8s ease-out infinite; }
+            @media (prefers-reduced-motion:reduce) { .ax-nuke,.ax-nuke * { animation-duration:.01ms !important; animation-iteration-count:1 !important; } }
           `}</style>
-          <div className="absolute inset-0 opacity-25" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px)", backgroundSize: "42px 42px", maskImage: "radial-gradient(ellipse, black, transparent 75%)" }} />
-          <div className="ax-nuke-ring" />
-          <div className="ax-nuke-ring" style={{ animationDelay: ".35s", width: "min(58vw,48vh)" }} />
-          <div className="ax-nuke-beam" style={{ left: "32%", animationDelay: ".2s" }} />
-          <div className="ax-nuke-beam" style={{ left: "68%", animationDelay: ".55s" }} />
-          <div className="relative z-10 px-6">
-            <div className="mx-auto grid h-28 w-28 place-items-center rounded-[32px] border border-amber-200/40 bg-white/5 text-7xl text-amber-100 shadow-[0_0_90px_rgba(255,177,111,.28)] backdrop-blur-sm">♛</div>
-            <div className="ax-nuke-title mt-9">
-              <p className="text-[10px] font-bold uppercase tracking-[0.45em] text-amber-200/80">AXChess · Match decided</p>
-              <h2 className="mt-4 text-5xl font-black sm:text-7xl">NUKE WIN</h2>
-              <p className="mt-4 text-xs font-semibold uppercase tracking-[0.35em] text-amber-100/80">Victory sequence initiated</p>
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(4,7,15,.08),rgba(4,5,10,.12)_48%,rgba(4,5,10,.88))]" />
+          <div className="ax-nuke-horizon" />
+          <div className="ax-nuke-wave" />
+          <div className="ax-nuke-wave" style={{ animationDelay: ".28s" }} />
+          <div className="ax-nuke-fireball" />
+          <div className="ax-nuke-stem" />
+          <div className="ax-nuke-cap" />
+          <div className="ax-nuke-ember" style={{ left:"13%", animationDelay:".2s" }} />
+          <div className="ax-nuke-ember" style={{ left:"27%", animationDelay:".9s" }} />
+          <div className="ax-nuke-ember" style={{ left:"73%", animationDelay:".55s" }} />
+          <div className="ax-nuke-ember" style={{ left:"88%", animationDelay:"1.2s" }} />
+          <div className="ax-nuke-flash" />
+          <div className="absolute inset-0 z-20 bg-gradient-to-t from-black/85 via-transparent to-black/20" />
+          <div className="relative z-40 px-6">
+            <p className="text-[10px] font-bold uppercase tracking-[0.48em] text-orange-200/90">AXChess · Match decided</p>
+            <div className="ax-nuke-title mt-5">
+              <h2 className="text-5xl font-black drop-shadow-[0_4px_28px_rgba(255,130,55,.65)] sm:text-7xl">NUKE WIN</h2>
+              <p className="mt-4 text-xs font-semibold uppercase tracking-[0.32em] text-amber-100/90">{nukeWinner === myColor ? "VICTORY CONFIRMED" : "OPPONENT WINS"}</p>
             </div>
           </div>
         </div>
