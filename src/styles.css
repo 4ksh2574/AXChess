@@ -529,3 +529,174 @@ html.theme-liquid [role="button"] {
     background-color: var(--glass-solid);
   }
 }
+
+
+/* ================================================================
+   AXChess Light Liquid Glass — pearl / mist material
+   Mirrors the dark glass language while retaining high contrast.
+   ================================================================ */
+html.theme-light {
+  color-scheme: light;
+  --background: oklch(0.975 0.012 235);
+  --foreground: oklch(0.22 0.025 255);
+  --card: oklch(1 0.008 235 / 0.62);
+  --card-foreground: oklch(0.22 0.025 255);
+  --popover: oklch(0.99 0.008 235 / 0.9);
+  --popover-foreground: oklch(0.22 0.025 255);
+  --primary: oklch(0.63 0.12 205);
+  --primary-foreground: oklch(0.99 0.006 230);
+  --secondary: oklch(0.93 0.018 235 / 0.72);
+  --secondary-foreground: oklch(0.28 0.025 255);
+  --muted: oklch(0.92 0.016 235 / 0.7);
+  --muted-foreground: oklch(0.47 0.025 255);
+  --accent: oklch(0.89 0.045 210 / 0.78);
+  --accent-foreground: oklch(0.24 0.035 250);
+  --border: oklch(0.42 0.025 250 / 0.14);
+  --input: oklch(0.42 0.025 250 / 0.18);
+  --ring: oklch(0.63 0.12 205);
+  --glass-base: oklch(1 0.01 235 / 0.42);
+  --glass-elevated: oklch(0.99 0.012 235 / 0.62);
+  --glass-floating: oklch(0.99 0.01 235 / 0.86);
+  --glass-solid: oklch(0.99 0.01 235 / 0.98);
+  --glass-border: oklch(0.35 0.025 250 / 0.13);
+  --glass-edge-color: oklch(1 0 0 / 0.92);
+  --glass-spot: oklch(1 0 0 / 0.62);
+  --glass-tint: oklch(1 0.02 220 / 0.3);
+  --glass-input: oklch(1 0.008 235 / 0.58);
+  --glass-shadow: inset 0 1px 0 oklch(1 0 0 / 0.9), 0 18px 42px -20px oklch(0.38 0.05 255 / 0.24);
+  --glass-shadow-low: inset 0 1px 0 oklch(1 0 0 / 0.85), 0 7px 18px -12px oklch(0.38 0.05 255 / 0.2);
+  --glass-shadow-float: inset 0 1px 0 oklch(1 0 0 / 0.95), 0 26px 60px -24px oklch(0.38 0.05 255 / 0.28);
+  --ambient-indigo: oklch(0.72 0.11 265 / 0.22);
+  --ambient-purple: oklch(0.77 0.1 310 / 0.18);
+  --ambient-cyan: oklch(0.79 0.1 205 / 0.24);
+  --app-bg-scrim: linear-gradient(180deg, oklch(0.98 0.012 235 / .82), oklch(0.96 0.016 235 / .88));
+}
+html.theme-light body {
+  background-color: #edf2f7;
+  background-image:
+    radial-gradient(ellipse at 12% 8%, oklch(0.77 0.1 265 / .22), transparent 46%),
+    radial-gradient(ellipse at 88% 82%, oklch(0.82 0.09 310 / .2), transparent 48%),
+    linear-gradient(180deg, oklch(0.98 0.012 235 / .9), oklch(0.94 0.018 235 / .94)),
+    var(--app-bg-image, none);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  color: var(--foreground);
+}
+html.theme-light .liquid-ambient { opacity: .78; }
+html.theme-light .liquid-mesh {
+  inset: -20%;
+  filter: blur(10px) saturate(115%);
+  background:
+    radial-gradient(ellipse at 12% 12%, var(--ambient-indigo), transparent 48%),
+    radial-gradient(ellipse at 85% 88%, var(--ambient-purple), transparent 52%),
+    radial-gradient(ellipse at 36% 52%, var(--ambient-cyan), transparent 48%);
+}
+html.theme-light .bg-card,
+html.theme-light .bg-popover,
+html.theme-light .glass-surface {
+  border: 1px solid var(--glass-border);
+  border-top-color: var(--glass-edge-color);
+  background-color: var(--glass-elevated);
+  background-image:
+    radial-gradient(420px circle at var(--mouse-x, 25%) var(--mouse-y, -10%), var(--glass-spot), transparent 60%),
+    linear-gradient(135deg, var(--glass-tint), transparent 58%);
+  backdrop-filter: blur(26px) saturate(165%);
+  -webkit-backdrop-filter: blur(26px) saturate(165%);
+  box-shadow: var(--glass-shadow);
+}
+html.theme-light .glass-floating,
+html.theme-light .bg-popover {
+  background-color: var(--glass-floating);
+  backdrop-filter: blur(34px) saturate(175%);
+  -webkit-backdrop-filter: blur(34px) saturate(175%);
+  box-shadow: var(--glass-shadow-float);
+}
+html.theme-light button.bg-secondary,
+html.theme-light button.bg-muted,
+html.theme-light a.bg-secondary,
+html.theme-light [role="tab"],
+html.theme-light [role="menuitem"] {
+  border: 1px solid var(--glass-border);
+  background-color: var(--glass-base);
+  background-image: linear-gradient(135deg, oklch(1 0 0 / .52), transparent 65%);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  box-shadow: var(--glass-shadow-low);
+}
+html.theme-light button.bg-primary,
+html.theme-light a.bg-primary {
+  border: 1px solid oklch(1 0 0 / .72);
+  background-color: color-mix(in oklab, var(--primary) 84%, white);
+  background-image: linear-gradient(135deg, oklch(1 0 0 / .45), transparent 72%);
+  color: var(--primary-foreground);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / .75), 0 8px 24px -12px color-mix(in oklab, var(--primary) 48%, transparent);
+  backdrop-filter: blur(18px) saturate(170%);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+}
+html.theme-light input:not([type="range"]):not([type="file"]),
+html.theme-light textarea,
+html.theme-light select {
+  background-color: var(--glass-input);
+  border-color: var(--glass-border);
+  color: var(--foreground);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+}
+html.theme-light input::placeholder,
+html.theme-light textarea::placeholder { color: var(--muted-foreground); }
+html.theme-light .text-muted-foreground { color: var(--muted-foreground); }
+html.theme-light .border-border,
+html.theme-light .border-input { border-color: var(--glass-border); }
+html.theme-light .ax-theme-toggle {
+  color: oklch(0.28 0.035 250);
+  background-color: oklch(1 0.01 235 / .82);
+}
+html.theme-light .ax-theme-toggle:hover { background-color: white; }
+html.theme-liquid .ax-theme-toggle {
+  color: oklch(0.96 0.012 225);
+  background-color: oklch(0.2 0.025 255 / .82);
+}
+.ax-theme-toggle {
+  position: fixed;
+  z-index: 100;
+  top: max(0.85rem, env(safe-area-inset-top));
+  right: max(0.85rem, env(safe-area-inset-right));
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.48rem;
+  padding: 0.58rem 0.9rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  box-shadow: var(--glass-shadow-low);
+  backdrop-filter: blur(22px) saturate(175%);
+  -webkit-backdrop-filter: blur(22px) saturate(175%);
+  transition: background-color 220ms ease, border-color 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+}
+.ax-theme-toggle svg { width: 1rem; height: 1rem; }
+.ax-theme-toggle:active { transform: scale(.96); }
+.ax-theme-toggle:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+@media (max-width: 480px) {
+  .ax-theme-toggle { min-height: 40px; padding: 0.52rem 0.78rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ax-theme-toggle { transition: none; }
+}
+@supports not ((backdrop-filter: blur(1px))) {
+  html.theme-light .bg-card,
+  html.theme-light .bg-popover,
+  html.theme-light .glass-surface,
+  html.theme-light button.bg-secondary,
+  html.theme-light button.bg-primary,
+  html.theme-light .ax-theme-toggle {
+    background-color: var(--glass-solid);
+  }
+}

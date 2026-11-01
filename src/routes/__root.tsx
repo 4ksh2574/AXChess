@@ -13,6 +13,8 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { registerOfflineSupport } from "../lib/pwa";
 import { LiquidAmbient } from "@/components/ui/LiquidAmbient";
+import { Moon, Sun } from "lucide-react";
+import { useBoardAppearance } from "@/hooks/useBoardAppearance";
 
 
 function NotFoundComponent() {
@@ -128,6 +130,8 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const { appearance, setAppearance } = useBoardAppearance();
+  const isDark = (appearance.themeMode ?? "dark") === "dark";
 
   useEffect(() => {
     registerOfflineSupport();
@@ -179,6 +183,17 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <LiquidAmbient />
+      <button
+        type="button"
+        onClick={() => setAppearance({ themeMode: isDark ? "light" : "dark" })}
+        className="ax-theme-toggle glass-surface"
+        aria-label={`Switch to ${isDark ? "light" : "dark"} theme`}
+        aria-pressed={isDark}
+        title={`Switch to ${isDark ? "light" : "dark"} theme`}
+      >
+        {isDark ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
+        <span>{isDark ? "Light" : "Dark"}</span>
+      </button>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
     </QueryClientProvider>

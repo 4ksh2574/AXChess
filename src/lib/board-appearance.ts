@@ -19,6 +19,8 @@ export type AppearanceState = {
   /** "custom" = derived from the sliders, otherwise a fixed hand-tuned palette. */
   paletteId: string;
   background: BackgroundId;
+  /** App chrome theme; board palette remains independent. */
+  themeMode?: "light" | "dark";
 };
 
 
@@ -336,6 +338,7 @@ export const DEFAULT_APPEARANCE: AppearanceState = {
   contrast: 46,
   paletteId: "custom",
   background: "chatgpt",
+  themeMode: "dark",
 };
 
 const STORAGE_KEY = "axchess-appearance";
@@ -368,6 +371,7 @@ export function loadAppearance(): AppearanceState {
       contrast: Number(parsed.contrast ?? DEFAULT_APPEARANCE.contrast),
       paletteId: parsed.paletteId ?? DEFAULT_APPEARANCE.paletteId,
       background: (parsed.background ?? DEFAULT_APPEARANCE.background) as BackgroundId,
+      themeMode: parsed.themeMode === "light" ? "light" : "dark",
     };
   } catch {
     return DEFAULT_APPEARANCE;
