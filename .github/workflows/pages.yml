@@ -50,11 +50,16 @@ jobs:
           const html = readFileSync("dist/client/index.html", "utf8");
           const refs = [...html.matchAll(/(?:src|href)="([^"]+\.(?:js|css)(?:\?[^"]*)?)"/g)]
             .map((m) => m[1])
-            .filter((p) => !/^(?:https?:)?\\//.test(p));
+            .filter((p) => !p.startsWith("http:") && !p.startsWith("https:") && !p.startsWith("//"));
           if (!refs.length) throw new Error("No local JS/CSS assets referenced by app index.html");
           for (const ref of refs) {
-            const clean = ref.split("?")[0].replace(/^\\//, "");
-            const path = clean.startsWith("AXChess/") ? `dist/client/${clean.slice("AXChess/".length)}` : `dist/client/${clean}`;
+            const clean = ref.split("?")[0];
+            const relative = clean.startsWith("/AXChess/")
+              ? clean.slice("/AXChess/".length)
+              : clean.startsWith("/")
+                ? clean.slice(1)
+                : clean;
+            const path = `dist/client/${relative}`;
             if (!existsSync(path)) throw new Error(`Missing app asset: ${ref} (checked ${path})`);
           }
           console.log(`Validated ${refs.length} local JS/CSS assets in the Pages app shell.`);
