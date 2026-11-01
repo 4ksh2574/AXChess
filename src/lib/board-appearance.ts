@@ -338,13 +338,14 @@ export const DEFAULT_APPEARANCE: AppearanceState = {
   contrast: 46,
   paletteId: "custom",
   background: "chatgpt",
-  themeMode: "dark",
+  themeMode: "light",
 };
 
 const STORAGE_KEY = "axchess-appearance";
 const DARK_DEFAULT_KEY = "axchess-dark-default-v1";
 const CLEAN_LIGHT_DEFAULT_KEY = "axchess-clean-light-default-v1";
 const CHATGPT_THEME_DEFAULT_KEY = "axchess-chatgpt-theme-default-v1";
+const LIGHT_GREEN_DEFAULT_KEY = "axchess-light-green-default-v1";
 
 export function loadAppearance(): AppearanceState {
   if (typeof localStorage === "undefined") return DEFAULT_APPEARANCE;
@@ -359,6 +360,11 @@ export function loadAppearance(): AppearanceState {
         parsed.background = "plain";
       }
     }
+    // Make the new green-accent light theme the one-time default for existing installs.
+    if (!localStorage.getItem(LIGHT_GREEN_DEFAULT_KEY)) {
+      localStorage.setItem(LIGHT_GREEN_DEFAULT_KEY, "1");
+      parsed.themeMode = "light";
+    }
     // Move users from the previous generic light background to the new theme once.
     if (!localStorage.getItem(CHATGPT_THEME_DEFAULT_KEY)) {
       localStorage.setItem(CHATGPT_THEME_DEFAULT_KEY, "1");
@@ -371,7 +377,7 @@ export function loadAppearance(): AppearanceState {
       contrast: Number(parsed.contrast ?? DEFAULT_APPEARANCE.contrast),
       paletteId: parsed.paletteId ?? DEFAULT_APPEARANCE.paletteId,
       background: (parsed.background ?? DEFAULT_APPEARANCE.background) as BackgroundId,
-      themeMode: parsed.themeMode === "light" ? "light" : "dark",
+      themeMode: parsed.themeMode === "dark" ? "dark" : "light",
     };
   } catch {
     return DEFAULT_APPEARANCE;
