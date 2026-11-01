@@ -85,6 +85,16 @@ export function firebaseErrorMessage(error: unknown): string {
       return "Network error. Check your connection and try again.";
     case "auth/popup-closed-by-user":
       return "Google sign-in was closed before it finished.";
+    case "auth/popup-blocked":
+      return "Your browser blocked the Google sign-in window. Allow pop-ups for AXChess and try again.";
+    case "auth/unauthorized-domain":
+      return "This AXChess website is not authorized in Firebase Authentication. Add 4ksh2574.github.io to Firebase's authorized domains.";
+    case "auth/unauthorized-continue-uri":
+      return "The password-reset return URL is not authorized in Firebase Authentication.";
+    case "auth/operation-not-allowed":
+      return "This sign-in method is disabled in Firebase Authentication. Enable it in the Firebase console.";
+    case "auth/web-storage-unsupported":
+      return "This browser cannot store the sign-in session. Open AXChess in Chrome and allow site storage.";
     case "auth/account-exists-with-different-credential":
       return "This email already has another sign-in method. Sign in with it first to link Google.";
     default:
