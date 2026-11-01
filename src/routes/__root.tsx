@@ -13,7 +13,6 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { registerOfflineSupport } from "../lib/pwa";
 import { LiquidAmbient } from "@/components/ui/LiquidAmbient";
-import { useBoardAppearance } from "@/hooks/useBoardAppearance";
 
 
 function NotFoundComponent() {
@@ -129,7 +128,6 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  const { appearance, setAppearance } = useBoardAppearance();
 
   useEffect(() => {
     registerOfflineSupport();
