@@ -400,6 +400,7 @@ export default function ChessApp() {
   const freePlace = useCallback((from: Square, to: Square) => {
     if (!cheatsEnabled || !freeMoveActive || resultRef.current || from === to) return false;
     const current = gameRef.current;
+    const originalFen = current.fen();
     const piece = current.remove(from);
     if (!piece) return false;
     const target = current.get(to);
@@ -410,7 +411,7 @@ export default function ChessApp() {
       const alteredFen = current.fen(); current.load(alteredFen); setSelected(null); setLastMove({ from, to }); setPremoves([]); refresh();
       if (modeRef.current === "online") peer.send({ t: "cheat-board", fen: alteredFen });
       sounds.move(); return true;
-    } catch { return false; }
+    } catch { current.load(originalFen); return false; }
   }, [cheatsEnabled, freeMoveActive, peer, refresh, setPremoves]);
 
   const tryMove = useCallback(
