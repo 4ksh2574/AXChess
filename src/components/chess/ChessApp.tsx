@@ -601,6 +601,7 @@ export default function ChessApp() {
   };
 
   const leave = () => {
+    setNukeConfirmOpen(false);
     peer.destroy();
     clearGame();
     gameRef.current = new Chess();
