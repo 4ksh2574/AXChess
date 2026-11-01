@@ -381,3 +381,151 @@ html.theme-chatgpt input:not([type=range]), html.theme-chatgpt textarea, html.th
 html.theme-chatgpt input:focus, html.theme-chatgpt textarea:focus, html.theme-chatgpt select:focus { outline-color:#10b7a3; }
 html.theme-chatgpt .glass-surface { border-color:rgba(25,35,35,.06); box-shadow:0 5px 18px -14px rgba(18,32,32,.2); }
 html.theme-chatgpt body::before { display:none; }
+
+
+/* ================================================================
+   AXChess Liquid Glass — unified dark glass material
+   Applied at the document level so every route shares one visual
+   language while board palettes and user background images remain
+   independently configurable.
+   ================================================================ */
+html.theme-liquid {
+  color-scheme: dark;
+  --background: oklch(0.105 0.018 255);
+  --foreground: oklch(0.96 0.012 225);
+  --card: oklch(0.19 0.025 255 / 0.56);
+  --card-foreground: oklch(0.96 0.012 225);
+  --popover: oklch(0.16 0.025 255 / 0.86);
+  --popover-foreground: oklch(0.96 0.012 225);
+  --primary: oklch(0.78 0.13 195);
+  --primary-foreground: oklch(0.12 0.025 230);
+  --secondary: oklch(0.28 0.025 255 / 0.62);
+  --secondary-foreground: oklch(0.94 0.012 225);
+  --muted: oklch(0.23 0.022 255 / 0.62);
+  --muted-foreground: oklch(0.73 0.025 245);
+  --accent: oklch(0.34 0.075 205 / 0.68);
+  --accent-foreground: oklch(0.97 0.012 220);
+  --border: oklch(1 0 0 / 0.13);
+  --input: oklch(1 0 0 / 0.15);
+  --ring: oklch(0.78 0.13 195);
+  --glass-base: oklch(0.25 0.025 255 / 0.34);
+  --glass-elevated: oklch(0.22 0.025 255 / 0.58);
+  --glass-floating: oklch(0.18 0.025 255 / 0.82);
+  --glass-solid: oklch(0.16 0.025 255 / 0.97);
+  --glass-border: oklch(1 0 0 / 0.14);
+  --glass-edge-color: oklch(1 0 0 / 0.42);
+  --glass-spot: oklch(1 0 0 / 0.13);
+  --glass-tint: oklch(0.85 0.08 205 / 0.075);
+  --glass-input: oklch(0.08 0.012 255 / 0.38);
+  --glass-shadow: inset 0 1px 0 oklch(1 0 0 / 0.22), 0 18px 44px -18px oklch(0 0 0 / 0.72);
+  --glass-shadow-low: inset 0 1px 0 oklch(1 0 0 / 0.18), 0 6px 18px -10px oklch(0 0 0 / 0.65);
+  --glass-shadow-float: inset 0 1px 0 oklch(1 0 0 / 0.3), 0 28px 72px -24px oklch(0 0 0 / 0.82);
+  --ambient-indigo: oklch(0.48 0.2 270 / 0.32);
+  --ambient-purple: oklch(0.48 0.19 305 / 0.25);
+  --ambient-cyan: oklch(0.68 0.16 205 / 0.25);
+  --app-bg-scrim: linear-gradient(180deg, oklch(0.1 0.018 255 / .9), oklch(0.08 0.015 255 / .96));
+}
+html.theme-liquid body {
+  background-color: #090d14;
+  background-image:
+    radial-gradient(ellipse at 12% 8%, oklch(0.36 0.14 270 / .22), transparent 46%),
+    radial-gradient(ellipse at 88% 82%, oklch(0.34 0.12 305 / .18), transparent 48%),
+    linear-gradient(180deg, oklch(0.11 0.018 255 / .88), oklch(0.075 0.012 255 / .94)),
+    var(--app-bg-image, none);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  color: var(--foreground);
+}
+html.theme-liquid .liquid-ambient { opacity: 1; }
+html.theme-liquid .liquid-mesh {
+  inset: -20%;
+  filter: blur(8px) saturate(125%);
+  background:
+    radial-gradient(ellipse at 12% 12%, var(--ambient-indigo), transparent 48%),
+    radial-gradient(ellipse at 85% 88%, var(--ambient-purple), transparent 52%),
+    radial-gradient(ellipse at 36% 52%, var(--ambient-cyan), transparent 48%);
+}
+html.theme-liquid .bg-card,
+html.theme-liquid .bg-popover,
+html.theme-liquid .glass-surface {
+  border: 1px solid var(--glass-border);
+  border-top-color: var(--glass-edge-color);
+  background-color: var(--glass-elevated);
+  background-image:
+    radial-gradient(420px circle at var(--mouse-x, 25%) var(--mouse-y, -10%), var(--glass-spot), transparent 60%),
+    linear-gradient(135deg, var(--glass-tint), transparent 58%);
+  backdrop-filter: blur(26px) saturate(175%);
+  -webkit-backdrop-filter: blur(26px) saturate(175%);
+  box-shadow: var(--glass-shadow);
+}
+html.theme-liquid .glass-floating,
+html.theme-liquid .bg-popover {
+  background-color: var(--glass-floating);
+  backdrop-filter: blur(34px) saturate(185%);
+  -webkit-backdrop-filter: blur(34px) saturate(185%);
+  box-shadow: var(--glass-shadow-float);
+}
+html.theme-liquid button.bg-secondary,
+html.theme-liquid button.bg-muted,
+html.theme-liquid a.bg-secondary,
+html.theme-liquid [role="tab"],
+html.theme-liquid [role="menuitem"] {
+  border: 1px solid var(--glass-border);
+  background-color: var(--glass-base);
+  background-image: linear-gradient(135deg, oklch(1 0 0 / .045), transparent 65%);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  box-shadow: var(--glass-shadow-low);
+}
+html.theme-liquid button.bg-primary,
+html.theme-liquid a.bg-primary {
+  border: 1px solid oklch(1 0 0 / .24);
+  background-color: color-mix(in oklab, var(--primary) 82%, transparent);
+  background-image: linear-gradient(135deg, oklch(1 0 0 / .22), transparent 72%);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / .3), 0 8px 24px -12px color-mix(in oklab, var(--primary) 70%, transparent);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+}
+html.theme-liquid input:not([type="range"]):not([type="file"]),
+html.theme-liquid textarea,
+html.theme-liquid select {
+  background-color: var(--glass-input);
+  border-color: var(--glass-border);
+  color: var(--foreground);
+  backdrop-filter: blur(18px) saturate(170%);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+}
+html.theme-liquid input::placeholder,
+html.theme-liquid textarea::placeholder { color: var(--muted-foreground); }
+html.theme-liquid .text-muted-foreground { color: var(--muted-foreground); }
+html.theme-liquid .border-border,
+html.theme-liquid .border-input { border-color: var(--glass-border); }
+html.theme-liquid .glass-edge {
+  background: linear-gradient(90deg, transparent, oklch(1 0 0 / .52), transparent);
+}
+html.theme-liquid button:not(:disabled),
+html.theme-liquid a,
+html.theme-liquid [role="button"] {
+  transition: background-color 220ms ease, border-color 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+}
+@media (hover: hover) {
+  html.theme-liquid button.bg-secondary:hover,
+  html.theme-liquid button.bg-muted:hover,
+  html.theme-liquid a.bg-secondary:hover {
+    border-color: oklch(1 0 0 / .3);
+    background-color: oklch(1 0 0 / .12);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html.theme-liquid .liquid-mesh { animation: none; }
+}
+@supports not ((backdrop-filter: blur(1px))) {
+  html.theme-liquid .bg-card,
+  html.theme-liquid .bg-popover,
+  html.theme-liquid .glass-surface,
+  html.theme-liquid button.bg-secondary,
+  html.theme-liquid button.bg-primary {
+    background-color: var(--glass-solid);
+  }
+}
