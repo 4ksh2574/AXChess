@@ -37,6 +37,7 @@ function syncCssVars(current: AppearanceState, theme: BoardTheme) {
   root.style.setProperty("--app-bg-image", url ? `url("${url}")` : "none");
   root.style.setProperty("--app-bg-scrim", option.scrim);
   root.classList.toggle("bg-dark-surface", option.dark && !(current.background === "custom" && !url));
+  root.classList.toggle("theme-chatgpt", current.background === "chatgpt");
 }
 
 function subscribe(listener: () => void) {
