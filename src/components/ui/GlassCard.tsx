@@ -19,7 +19,7 @@ export function GlassCard({ children, className, as = "div", interactive = false
   const classes = cn("glass-surface", `glass-${depth}`, className);
   const content = <><span aria-hidden="true" className="glass-edge" />{children}</>;
   if (interactive && as === "div") {
-    const { onClick, onKeyDown, role, tabIndex, ...rest } = props;
+    const { onClick, onKeyDown, role, tabIndex, onSubmit: _onSubmit, ...rest } = props;
     return <div
       {...rest}
       ref={element}
