@@ -99,6 +99,7 @@ export default function ChessApp() {
   const [cheatsEnabled, setCheatsEnabled] = useState(() => { try { return localStorage.getItem("axchess-cheats") === "true"; } catch { return false; } });
   const [nukeWinner, setNukeWinner] = useState<"white" | "black" | null>(null);
   const [nukeAnimating, setNukeAnimating] = useState(false);
+  const [nukeConfirmOpen, setNukeConfirmOpen] = useState(false);
   const [resigned, setResigned] = useState<"white" | "black" | null>(null);
   const [resultDismissed, setResultDismissed] = useState(false);
   const [undoState, setUndoState] = useState<"idle" | "sent" | "incoming">("idle");
@@ -672,11 +673,18 @@ export default function ChessApp() {
 
   const triggerNuke = useCallback(() => {
     if (!cheatsEnabled || resultRef.current) return;
-    if (!window.confirm("NUKE WIN will immediately end this match. Continue?")) return;
-    if (!window.confirm("Final confirmation: trigger the cinematic victory effect?")) return;
-    setNukeWinner(myColorRef.current); setNukeAnimating(true); setResultDismissed(false);
+    setNukeConfirmOpen(true);
+  }, [cheatsEnabled]);
+
+  const confirmNuke = useCallback(() => {
+    if (!cheatsEnabled || resultRef.current) return;
+    setNukeConfirmOpen(false);
+    setNukeWinner(myColorRef.current);
+    setNukeAnimating(true);
+    setResultDismissed(false);
     if (modeRef.current === "online") peer.send({ t: "nuke-win", winner: myColorRef.current });
-    window.setTimeout(() => setNukeAnimating(false), 4200); sounds.end();
+    window.setTimeout(() => setNukeAnimating(false), 5000);
+    sounds.end();
   }, [cheatsEnabled, peer]);
 
   useEffect(() => {
@@ -1323,12 +1331,46 @@ export default function ChessApp() {
         </section>
       ) : null}
 
+      {nukeConfirmOpen ? (
+        <div className="fixed inset-0 z-[90] grid place-items-center bg-black/65 p-4 backdrop-blur-md">
+          <GlassCard depth="floating" className="w-full max-w-sm rounded-[28px] border border-red-500/20 bg-card p-6 text-center">
+            <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-red-500/10 text-2xl text-red-500">♛</div>
+            <p className="mt-4 text-[10px] font-bold uppercase tracking-[0.35em] text-red-500">AXChess · Match override</p>
+            <h3 className="mt-2 text-2xl font-black text-foreground">Trigger Nuke Win?</h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">This ends the current match immediately and declares you the winner. Your opponent will see the same victory sequence.</p>
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <Button variant="ghost" onClick={() => setNukeConfirmOpen(false)} className="h-12 rounded-2xl bg-secondary text-sm font-semibold text-secondary-foreground">Cancel</Button>
+              <Button variant="ghost" onClick={confirmNuke} className="h-12 rounded-2xl bg-red-600 text-sm font-bold text-white hover:bg-red-700">Confirm</Button>
+            </div>
+          </GlassCard>
+        </div>
+      ) : null}
+
       {nukeAnimating ? (
-        <div className="fixed inset-0 z-[100] grid place-items-center overflow-hidden bg-[#170609]/95 text-center text-white">
-          <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_center,rgba(255,45,45,0.75),rgba(90,0,12,0.35)_35%,transparent_70%)]" />
-          <div className="absolute h-[70vmin] w-[70vmin] animate-ping rounded-full border-4 border-red-400/40" />
-          <div className="absolute h-[48vmin] w-[48vmin] animate-pulse rounded-full border border-orange-200/50 shadow-[0_0_100px_40px_rgba(255,35,35,0.35)]" />
-          <div className="relative z-10 px-6 drop-shadow-[0_0_24px_rgba(255,70,40,0.9)]"><p className="text-xs font-bold uppercase tracking-[0.45em] text-red-200">System override</p><h2 className="mt-4 text-5xl font-black tracking-tight sm:text-7xl">NUKE WIN</h2><p className="mt-3 text-sm font-semibold uppercase tracking-[0.3em] text-orange-100">Victory sequence</p></div>
+        <div className="ax-nuke fixed inset-0 z-[100] grid place-items-center overflow-hidden text-center text-white">
+          <style>{`
+            @keyframes ax-nuke-in { 0% { opacity: 0; transform: scale(.72) rotate(-8deg); filter: blur(18px); } 18% { opacity: 1; filter: blur(0); } 72% { opacity: 1; transform: scale(1) rotate(0); } 100% { opacity: 0; transform: scale(1.12); } }
+            @keyframes ax-nuke-ring { 0% { transform: scale(.18) rotate(0); opacity: 0; } 20% { opacity: .85; } 100% { transform: scale(1.7) rotate(140deg); opacity: 0; } }
+            @keyframes ax-nuke-beam { 0% { transform: translateY(110%) scaleY(.2); opacity: 0; } 25% { opacity: .8; } 100% { transform: translateY(-110%) scaleY(1); opacity: 0; } }
+            @keyframes ax-nuke-title { 0%,12% { opacity: 0; transform: translateY(22px); letter-spacing: .55em; } 28%,78% { opacity: 1; transform: translateY(0); letter-spacing: .12em; } 100% { opacity: 0; transform: translateY(-12px); } }
+            .ax-nuke { background: radial-gradient(ellipse at 50% 48%, #54202b 0%, #1a101c 42%, #080b16 100%); animation: ax-nuke-in 5s ease both; }
+            .ax-nuke-ring { position:absolute; width:min(78vw,66vh); aspect-ratio:1; border:1px solid rgba(255,214,153,.65); border-radius:50%; box-shadow:0 0 45px rgba(255,92,77,.2),inset 0 0 45px rgba(255,214,153,.08); animation:ax-nuke-ring 3.4s cubic-bezier(.12,.7,.2,1) both; }
+            .ax-nuke-beam { position:absolute; width:1px; height:150%; background:linear-gradient(transparent,rgba(255,218,166,.55),transparent); animation:ax-nuke-beam 2.5s ease-in-out both; }
+            .ax-nuke-title { animation:ax-nuke-title 5s ease both; }
+          `}</style>
+          <div className="absolute inset-0 opacity-25" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px)", backgroundSize: "42px 42px", maskImage: "radial-gradient(ellipse, black, transparent 75%)" }} />
+          <div className="ax-nuke-ring" />
+          <div className="ax-nuke-ring" style={{ animationDelay: ".35s", width: "min(58vw,48vh)" }} />
+          <div className="ax-nuke-beam" style={{ left: "32%", animationDelay: ".2s" }} />
+          <div className="ax-nuke-beam" style={{ left: "68%", animationDelay: ".55s" }} />
+          <div className="relative z-10 px-6">
+            <div className="mx-auto grid h-28 w-28 place-items-center rounded-[32px] border border-amber-200/40 bg-white/5 text-7xl text-amber-100 shadow-[0_0_90px_rgba(255,177,111,.28)] backdrop-blur-sm">♛</div>
+            <div className="ax-nuke-title mt-9">
+              <p className="text-[10px] font-bold uppercase tracking-[0.45em] text-amber-200/80">AXChess · Match decided</p>
+              <h2 className="mt-4 text-5xl font-black sm:text-7xl">NUKE WIN</h2>
+              <p className="mt-4 text-xs font-semibold uppercase tracking-[0.35em] text-amber-100/80">Victory sequence initiated</p>
+            </div>
+          </div>
         </div>
       ) : null}
       {undoState === "incoming" ? (
