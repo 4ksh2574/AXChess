@@ -3,14 +3,6 @@ name: Deploy AXChess app to GitHub Pages
 on:
   push:
     branches: [main]
-    paths:
-      - "src/**"
-      - "public/**"
-      - "package.json"
-      - "bun.lock"
-      - "vite.config.pages.ts"
-      - ".github/workflows/pages.yml"
-      - "docs/**"
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -36,16 +28,42 @@ jobs:
         run: bun install --frozen-lockfile
       - name: Build static AXChess app
         run: bun run build:pages
-      - name: Prepare GitHub Pages app entry points
+      - name: Prepare and validate GitHub Pages app
         run: |
-          test -f dist/client/_shell.html
-          # TanStack Start SPA emits its browser app shell as _shell.html.
-          # Publish it as the root document so Pages opens the actual game.
+          set -euo pipefail
+          test -s dist/client/_shell.html
+          # The root URL must always serve the built chess application shell.
           cp dist/client/_shell.html dist/client/index.html
           cp dist/client/_shell.html dist/client/404.html
           mkdir -p dist/client/project
           cp docs/index.html dist/client/project/index.html
           touch dist/client/.nojekyll
+
+          test -s dist/client/index.html
+          test -s dist/client/404.html
+          test -s dist/client/project/index.html
+          # Fail closed if the generated app shell has no bundled JS entry.
+          grep -Eq '<script[^>]+src=' dist/client/index.html
+          # Every referenced local JS/CSS asset must exist in the upload.
+          node --input-type=module <<'NODE'
+          import { readFileSync, existsSync } from "node:fs";
+          const html = readFileSync("dist/client/index.html", "utf8");
+          const refs = [...html.matchAll(/(?:src|href)="([^"]+\.(?:js|css)(?:\?[^"]*)?)"/g)]
+            .map((m) => m[1])
+            .filter((p) => !p.startsWith("http:") && !p.startsWith("https:") && !p.startsWith("//"));
+          if (!refs.length) throw new Error("No local JS/CSS assets referenced by app index.html");
+          for (const ref of refs) {
+            const clean = ref.split("?")[0];
+            const relative = clean.startsWith("/AXChess/")
+              ? clean.slice("/AXChess/".length)
+              : clean.startsWith("/")
+                ? clean.slice(1)
+                : clean;
+            const path = `dist/client/${relative}`;
+            if (!existsSync(path)) throw new Error(`Missing app asset: ${ref} (checked ${path})`);
+          }
+          console.log(`Validated ${refs.length} local JS/CSS assets in the Pages app shell.`);
+          NODE
       - name: Configure Pages
         if: github.event_name != 'pull_request'
         uses: actions/configure-pages@v5
