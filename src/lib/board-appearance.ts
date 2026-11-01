@@ -9,7 +9,7 @@
 
 export type PieceSetId = "neo" | "rounded" | "classic" | "geometric" | "chunky";
 
-export type BackgroundId = "midnight" | "wallpaper" | "ember" | "plain" | "custom";
+export type BackgroundId = "chatgpt" | "midnight" | "wallpaper" | "ember" | "plain" | "custom";
 
 export type AppearanceState = {
   pieceSet: PieceSetId;
@@ -251,6 +251,13 @@ export type BackgroundOption = {
 
 export const BACKGROUNDS: BackgroundOption[] = [
   {
+    id: "chatgpt",
+    label: "ChatGPT Minimal",
+    url: null,
+    scrim: "linear-gradient(180deg, #ffffff 0%, #fafafa 58%, #f3f5f5 100%)",
+    dark: false,
+  },
+  {
     id: "midnight",
     label: "Midnight",
     url: null,
@@ -328,12 +335,13 @@ export const DEFAULT_APPEARANCE: AppearanceState = {
   saturation: 46,
   contrast: 46,
   paletteId: "custom",
-  background: "plain",
+  background: "chatgpt",
 };
 
 const STORAGE_KEY = "axchess-appearance";
 const DARK_DEFAULT_KEY = "axchess-dark-default-v1";
 const CLEAN_LIGHT_DEFAULT_KEY = "axchess-clean-light-default-v1";
+const CHATGPT_THEME_DEFAULT_KEY = "axchess-chatgpt-theme-default-v1";
 
 export function loadAppearance(): AppearanceState {
   if (typeof localStorage === "undefined") return DEFAULT_APPEARANCE;
@@ -347,6 +355,11 @@ export function loadAppearance(): AppearanceState {
       if (parsed.background === "midnight" && localStorage.getItem(DARK_DEFAULT_KEY)) {
         parsed.background = "plain";
       }
+    }
+    // Move users from the previous generic light background to the new theme once.
+    if (!localStorage.getItem(CHATGPT_THEME_DEFAULT_KEY)) {
+      localStorage.setItem(CHATGPT_THEME_DEFAULT_KEY, "1");
+      if (parsed.background === "plain") parsed.background = "chatgpt";
     }
     return {
       pieceSet: (parsed.pieceSet ?? DEFAULT_APPEARANCE.pieceSet) as PieceSetId,
