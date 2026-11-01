@@ -95,6 +95,7 @@ export default function ChessApp() {
   const [joinInput, setJoinInput] = useState("");
   const [copied, setCopied] = useState<"code" | "link" | null>(null);
   const [muted, setMutedState] = useState(false);
+  const [freeMoveActive, setFreeMoveActive] = useState(false);
   const [cheatsEnabled, setCheatsEnabled] = useState(() => { try { return localStorage.getItem("axchess-cheats") === "true"; } catch { return false; } });
   const [nukeWinner, setNukeWinner] = useState<"white" | "black" | null>(null);
   const [nukeAnimating, setNukeAnimating] = useState(false);
@@ -397,7 +398,7 @@ export default function ChessApp() {
   }, []);
 
   const freePlace = useCallback((from: Square, to: Square) => {
-    if (!cheatsEnabled || resultRef.current || from === to) return false;
+    if (!cheatsEnabled || !freeMoveActive || resultRef.current || from === to) return false;
     const current = gameRef.current;
     const piece = current.remove(from);
     if (!piece) return false;
@@ -410,7 +411,7 @@ export default function ChessApp() {
       if (modeRef.current === "online") peer.send({ t: "cheat-board", fen: alteredFen });
       sounds.move(); return true;
     } catch { return false; }
-  }, [cheatsEnabled, peer, refresh, setPremoves]);
+  }, [cheatsEnabled, freeMoveActive, peer, refresh, setPremoves]);
 
   const tryMove = useCallback(
     (from: Square, to: Square) => {
@@ -684,7 +685,7 @@ export default function ChessApp() {
       if (target && ["INPUT", "TEXTAREA"].includes(target.tagName)) return;
       if (event.key.length !== 1 || !/[a-z]/i.test(event.key)) return;
       buffer = (buffer + event.key.toLowerCase()).slice(-16);
-      if (buffer.endsWith("freemove")) { buffer = ""; return; }
+      if (buffer.endsWith("freemove")) { buffer = ""; setFreeMoveActive(true); return; }
       if (buffer.endsWith("nuke")) { buffer = ""; triggerNuke(); }
     };
     window.addEventListener("keydown", onKeyDown);
@@ -1193,9 +1194,9 @@ export default function ChessApp() {
                   boardOrientation: orientation,
                   pieces,
                   squareStyles,
-                  allowDragging: !result && (cheatsEnabled || ((isMyTurn && !thinking) || mode !== "pass")), 
+                  allowDragging: !result && ((freeMoveActive && cheatsEnabled) || ((isMyTurn && !thinking) || mode !== "pass")),  
                   canDragPiece: ({ piece }) => {
-                    if (cheatsEnabled) return true;
+                    if (cheatsEnabled && freeMoveActive) return true;
                     const letter = piece.pieceType[0];
                     const pc = premoveColor();
                     if (pc) return letter === pc;
@@ -1211,7 +1212,7 @@ export default function ChessApp() {
                   onPieceDrop: ({ sourceSquare, targetSquare }) => {
                     unlockAudio();
                     if (!targetSquare || result) return false;
-                    if (cheatsEnabled) return freePlace(sourceSquare as Square, targetSquare as Square);
+                    if (cheatsEnabled && freeMoveActive) return freePlace(sourceSquare as Square, targetSquare as Square);
                     if (premoveColor()) return queuePremove(sourceSquare, targetSquare);
                     if (thinking) return false;
                     return tryMove(sourceSquare as Square, targetSquare as Square);
