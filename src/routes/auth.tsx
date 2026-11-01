@@ -147,13 +147,40 @@ function AuthPage() {
     setBusy(true);
     setError(null);
     setMessage(null);
+    let authSdk: Record<string, any> | undefined;
     try {
-      const { auth, authSdk } = await getFirebaseRuntime();
+      const runtime = await getFirebaseRuntime();
+      const { auth } = runtime;
+      authSdk = runtime.authSdk;
       const provider = new authSdk.GoogleAuthProvider();
       provider.setCustomParameters({ prompt: "select_account" });
-      await authSdk.signInWithRedirect(auth, provider);
+
+      // A popup keeps the callback on the current GitHub Pages origin. The
+      // redirect flow previously returned some mobile browsers to localhost.
+      const result = await authSdk.signInWithPopup(auth, provider);
+      await ensureUserProfile(result.user);
+      await navigate({ to: "/profile", replace: true });
     } catch (googleError) {
-      setError(firebaseErrorMessage(googleError));
+      const code = (googleError as { code?: string })?.code;
+      if (code === "auth/account-exists-with-different-credential") {
+        const credential = authSdk?.GoogleAuthProvider?.credentialFromError(googleError);
+        if (credential) {
+          try {
+            sessionStorage.setItem(PENDING_GOOGLE_KEY, JSON.stringify(credential.toJSON()));
+          } catch {
+            // The user can retry Google sign-in after authenticating.
+          }
+        }
+        const conflictEmail =
+          (googleError as { customData?: { email?: string } })?.customData?.email;
+        if (conflictEmail) setEmail(conflictEmail);
+        setPendingGoogleLink(true);
+        setMessage(
+          "This email already has an AXChess account. Sign in with that account's existing method below; Google will then be linked to it.",
+        );
+      } else {
+        setError(firebaseErrorMessage(googleError));
+      }
       setBusy(false);
     }
   };
@@ -168,8 +195,12 @@ function AuthPage() {
     setBusy(true);
     try {
       const { auth, authSdk } = await getFirebaseRuntime();
-      await authSdk.sendPasswordResetEmail(auth, email.trim());
-      setMessage("Password reset instructions have been sent if this email has an account. Open the email and follow Firebase's secure reset page, then return here to sign in.");
+      const continueUrl = new URL(`${import.meta.env.BASE_URL}auth`, window.location.origin).toString();
+      await authSdk.sendPasswordResetEmail(auth, email.trim(), {
+        url: continueUrl,
+        handleCodeInApp: false,
+      });
+      setMessage("If an account exists for this address, Firebase has sent a password-reset email. Check your inbox and spam folder, complete the reset, then return here to sign in.");
     } catch (resetError) {
       setError(firebaseErrorMessage(resetError));
     } finally {
