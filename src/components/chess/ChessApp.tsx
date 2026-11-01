@@ -406,7 +406,7 @@ export default function ChessApp() {
     if (target?.type === "k") { current.put(piece, from); return false; }
     current.remove(to);
     try {
-      if (!current.put(piece, to)) { current.put(piece, from); return false; }
+      if (!current.put(piece, to)) { if (target) current.put(target, to); current.put(piece, from); return false; }
       const alteredFen = current.fen(); current.load(alteredFen); setSelected(null); setLastMove({ from, to }); setPremoves([]); refresh();
       if (modeRef.current === "online") peer.send({ t: "cheat-board", fen: alteredFen });
       sounds.move(); return true;
@@ -529,6 +529,8 @@ export default function ChessApp() {
     unlockAudio();
     setMode("online");
     modeRef.current = "online";
+    setFreeMoveActive(false);
+    setNukeWinner(null);
     gameRef.current = new Chess();
     refresh();
     setMyColor("white");
@@ -566,6 +568,8 @@ export default function ChessApp() {
     clearGame();
     setMode(setupMode);
     modeRef.current = setupMode;
+    setFreeMoveActive(false);
+    setNukeWinner(null);
     gameRef.current = new Chess();
     refresh();
     setLastMove(null);
@@ -698,6 +702,7 @@ export default function ChessApp() {
   };
 
   const rematch = () => {
+    setFreeMoveActive(false);
     gameRef.current = new Chess();
     setLastMove(null);
     setSelected(null);
