@@ -77,10 +77,16 @@ jobs:
           packages: platform-tools platforms;android-35 build-tools;35.0.0
 
       - name: Install Capacitor tooling
-        run: npm install --no-save --legacy-peer-deps --package-lock=false @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7
+        run: npm install --no-save --legacy-peer-deps --package-lock=false @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7 @capacitor/assets@3
 
       - name: Generate Android project
         run: npx cap add android
+
+      - name: Generate Android launcher icon from the in-app logo
+        run: |
+          mkdir -p assets
+          cp src/assets/logo-light.png assets/logo.png
+          npx capacitor-assets generate --android --iconBackgroundColor '#ffffff' --iconBackgroundColorDark '#111111'
 
       - name: Sync bundled site into Android project
         run: npx cap sync android
