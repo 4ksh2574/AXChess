@@ -2,6 +2,8 @@ name: Build AXChess Android APK
 
 on:
   push:
+    branches:
+      - "release-build/**"
     tags:
       - "v*"
       - "AXChess"
@@ -37,7 +39,7 @@ jobs:
           if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
             TAG="${{ inputs.release_tag }}"
           else
-            TAG="${GITHUB_REF_NAME}"
+            TAG="${GITHUB_REF_NAME##*/}"
           fi
           echo "release_tag=$TAG" >> "$GITHUB_OUTPUT"
 
@@ -87,6 +89,45 @@ jobs:
           mkdir -p assets
           cp src/assets/logo-light.png assets/logo.png
           npx capacitor-assets generate --android --iconBackgroundColor '#ffffff' --iconBackgroundColorDark '#111111'
+
+      - name: Enable immersive full-screen Android mode
+        run: |
+          cat > android/app/src/main/java/com/axchess/app/MainActivity.java <<'EOF'
+          package com.axchess.app;
+
+          import android.os.Bundle;
+          import androidx.core.view.WindowCompat;
+          import androidx.core.view.WindowInsetsCompat;
+          import androidx.core.view.WindowInsetsControllerCompat;
+          import com.getcapacitor.BridgeActivity;
+
+          public class MainActivity extends BridgeActivity {
+              @Override
+              public void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+                  hideSystemBars();
+              }
+
+              @Override
+              public void onResume() {
+                  super.onResume();
+                  hideSystemBars();
+              }
+
+              @Override
+              public void onWindowFocusChanged(boolean hasFocus) {
+                  super.onWindowFocusChanged(hasFocus);
+                  if (hasFocus) hideSystemBars();
+              }
+
+              private void hideSystemBars() {
+                  WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+                  controller.hide(WindowInsetsCompat.Type.systemBars());
+                  controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+              }
+          }
+          EOF
 
       - name: Sync bundled site into Android project
         run: npx cap sync android
