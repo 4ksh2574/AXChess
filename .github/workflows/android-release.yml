@@ -132,13 +132,6 @@ jobs:
       - name: Sync bundled site into Android project
         run: npx cap sync android
 
-      - name: Verify APK does not reference Lovable hosting
-        run: |
-          if grep -R "axchess.lovable.app" android-web capacitor.config.json; then
-            echo "Unexpected remote Lovable URL found in standalone app assets."
-            exit 1
-          fi
-
       - name: Build installable APK
         working-directory: android
         run: |

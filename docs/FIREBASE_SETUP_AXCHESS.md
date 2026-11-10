@@ -56,4 +56,4 @@ linking in client code.
   custom claim assigned by a trusted Admin SDK environment.
 - Never grant custom claims from browser code.
 - Existing Supabase profiles/passwords are not silently assumed to be migrated.
-  A controlled export and UID mapping are required to preserve old records.
+  Any legacy account or data migration requires an explicit export and UID mapping.
