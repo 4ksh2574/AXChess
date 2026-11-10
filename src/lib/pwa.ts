@@ -8,16 +8,7 @@
 const SW_URL = `${import.meta.env.BASE_URL}sw.js`;
 
 function isPreviewHost(hostname: string) {
-  return (
-    hostname.startsWith("id-preview--") ||
-    hostname.startsWith("preview--") ||
-    hostname === "lovableproject.com" ||
-    hostname.endsWith(".lovableproject.com") ||
-    hostname === "lovableproject-dev.com" ||
-    hostname.endsWith(".lovableproject-dev.com") ||
-    hostname === "beta.lovable.dev" ||
-    hostname.endsWith(".beta.lovable.dev")
-  );
+  return hostname.startsWith("id-preview--") || hostname.startsWith("preview--");
 }
 
 async function unregisterApp() {
